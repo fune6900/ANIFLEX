@@ -1,26 +1,33 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
 
-interface Anime {
+export interface ContentRowItem {
   id: number;
   title: string;
-  year: string;
-  rating: string;
-  match: number;
-  gradient: string;
+  year?: string;
+  rating?: string;
+  match?: number;
+  gradient?: string;
   label?: string;
+  posterPath?: string | null;
+  backdropPath?: string | null;
+  overview?: string;
+  genres?: string[];
+  href?: string;
 }
 
 interface ContentRowProps {
   title: string;
-  items: Anime[];
+  items: ContentRowItem[];
 }
 
-function AnimeCard({ item }: { item: Anime }) {
+function AnimeCard({ item }: { item: ContentRowItem }) {
   const [hovered, setHovered] = useState(false);
 
-  return (
+  const cardInner = (
     <div
       className="relative flex-shrink-0 w-[140px] sm:w-[170px] md:w-[200px] lg:w-[230px] cursor-pointer group"
       onMouseEnter={() => setHovered(true)}
@@ -34,19 +41,49 @@ function AnimeCard({ item }: { item: Anime }) {
       >
         {/* ポスタービジュアル */}
         <div
-          className="w-full aspect-[2/3] md:aspect-video"
-          style={{ background: item.gradient }}
+          className="w-full aspect-[2/3] md:aspect-video relative overflow-hidden"
+          style={
+            !item.posterPath && !item.backdropPath
+              ? { background: item.gradient ?? "linear-gradient(135deg,#1a1a2e,#16213e)" }
+              : undefined
+          }
         >
-          <div className="w-full h-full flex flex-col items-center justify-center p-3">
-            {item.label && (
-              <span className="bg-[#E50914] text-white text-[10px] font-bold px-1.5 py-0.5 mb-2 tracking-widest">
+          {/* TMDb画像 */}
+          {(item.backdropPath || item.posterPath) ? (
+            <Image
+              src={`https://image.tmdb.org/t/p/${item.backdropPath ? "w500" : "w342"}${item.backdropPath ?? item.posterPath}`}
+              alt={item.title}
+              fill
+              sizes="(max-width: 640px) 140px, (max-width: 768px) 170px, (max-width: 1024px) 200px, 230px"
+              className="object-cover"
+              loading="lazy"
+            />
+          ) : (
+            <div className="w-full h-full flex flex-col items-center justify-center p-3">
+              {item.label && (
+                <span className="bg-[#E50914] text-white text-[10px] font-bold px-1.5 py-0.5 mb-2 tracking-widest">
+                  {item.label}
+                </span>
+              )}
+              <span className="text-white font-black text-sm md:text-base text-center leading-tight drop-shadow-lg">
+                {item.title}
+              </span>
+            </div>
+          )}
+
+          {/* 画像上のラベルオーバーレイ */}
+          {(item.posterPath || item.backdropPath) && item.label && (
+            <div className="absolute top-1 left-1">
+              <span className="bg-[#E50914] text-white text-[9px] font-bold px-1 py-0.5 tracking-widest">
                 {item.label}
               </span>
-            )}
-            <span className="text-white font-black text-sm md:text-base text-center leading-tight drop-shadow-lg">
-              {item.title}
-            </span>
-          </div>
+            </div>
+          )}
+
+          {/* 画像がある場合の下グラデーション */}
+          {(item.posterPath || item.backdropPath) && (
+            <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/70 to-transparent pointer-events-none" />
+          )}
         </div>
 
         {/* ホバー時の詳細パネル */}
@@ -64,11 +101,6 @@ function AnimeCard({ item }: { item: Anime }) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
               </button>
-              <button className="w-8 h-8 rounded-full border-2 border-gray-400 flex items-center justify-center hover:border-white transition text-white">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
-                </svg>
-              </button>
               <button className="w-8 h-8 rounded-full border-2 border-gray-400 flex items-center justify-center hover:border-white transition text-white ml-auto">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -78,24 +110,47 @@ function AnimeCard({ item }: { item: Anime }) {
 
             {/* メタ情報 */}
             <div className="flex items-center gap-2 text-xs mb-1">
-              <span className="text-green-400 font-bold">{item.match}%一致</span>
-              <span className="border border-gray-500 text-gray-400 px-1">{item.rating}</span>
-              <span className="text-gray-400">{item.year}</span>
+              {item.match != null && item.match > 0 && (
+                <span className="text-green-400 font-bold">{item.match}%一致</span>
+              )}
+              {item.rating && (
+                <span className="border border-gray-500 text-gray-400 px-1">{item.rating}</span>
+              )}
+              {item.year && <span className="text-gray-400">{item.year}</span>}
             </div>
+
+            {/* タイトル（画像があるカードのみ） */}
+            {(item.posterPath || item.backdropPath) && (
+              <p className="text-white text-xs font-semibold truncate mb-1">{item.title}</p>
+            )}
 
             {/* ジャンルタグ */}
             <div className="flex items-center gap-1 text-xs text-gray-400 flex-wrap">
-              <span>アクション</span>
-              <span className="w-1 h-1 rounded-full bg-gray-500 inline-block" />
-              <span>ファンタジー</span>
-              <span className="w-1 h-1 rounded-full bg-gray-500 inline-block" />
-              <span>アドベンチャー</span>
+              {item.genres && item.genres.length > 0 ? (
+                item.genres.slice(0, 3).map((g, i) => (
+                  <span key={g}>
+                    {i > 0 && <span className="w-1 h-1 rounded-full bg-gray-500 inline-block mr-1" />}
+                    {g}
+                  </span>
+                ))
+              ) : (
+                <>
+                  <span>アクション</span>
+                  <span className="w-1 h-1 rounded-full bg-gray-500 inline-block" />
+                  <span>ファンタジー</span>
+                </>
+              )}
             </div>
           </div>
         )}
       </div>
     </div>
   );
+
+  if (item.href) {
+    return <Link href={item.href}>{cardInner}</Link>;
+  }
+  return cardInner;
 }
 
 export default function ContentRow({ title, items }: ContentRowProps) {
@@ -106,14 +161,18 @@ export default function ContentRow({ title, items }: ContentRowProps) {
   const scroll = (dir: "left" | "right") => {
     if (!rowRef.current) return;
     const amount = rowRef.current.clientWidth * 0.75;
-    rowRef.current.scrollBy({ left: dir === "right" ? amount : -amount, behavior: "smooth" });
+    rowRef.current.scrollBy({
+      left: dir === "right" ? amount : -amount,
+      behavior: "smooth",
+    });
   };
 
   const handleScroll = () => {
     if (!rowRef.current) return;
     setShowLeftArrow(rowRef.current.scrollLeft > 0);
     setShowRightArrow(
-      rowRef.current.scrollLeft + rowRef.current.clientWidth < rowRef.current.scrollWidth - 10
+      rowRef.current.scrollLeft + rowRef.current.clientWidth <
+        rowRef.current.scrollWidth - 10
     );
   };
 
@@ -124,8 +183,18 @@ export default function ContentRow({ title, items }: ContentRowProps) {
         {title}
         <span className="text-[#54b9c5] text-sm font-semibold opacity-0 group-hover/row:opacity-100 transition-opacity flex items-center gap-1 cursor-pointer">
           すべて見る
-          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
+          <svg
+            className="w-3 h-3"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={3}
+              d="M9 5l7 7-7 7"
+            />
           </svg>
         </span>
       </h2>
@@ -138,8 +207,18 @@ export default function ContentRow({ title, items }: ContentRowProps) {
             onClick={() => scroll("left")}
             className="hidden md:flex absolute left-0 top-0 bottom-0 z-10 w-10 items-center justify-center bg-black/50 hover:bg-black/70 transition text-white opacity-0 group-hover/row:opacity-100"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
             </svg>
           </button>
         )}
@@ -162,8 +241,18 @@ export default function ContentRow({ title, items }: ContentRowProps) {
             onClick={() => scroll("right")}
             className="hidden md:flex absolute right-0 top-0 bottom-0 z-10 w-10 items-center justify-center bg-black/50 hover:bg-black/70 transition text-white opacity-0 group-hover/row:opacity-100"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
             </svg>
           </button>
         )}
