@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import Navbar from "@/components/Navbar";
 
 export const metadata: Metadata = {
   title: "ANIFLEX - アニメ・声優検索",
@@ -13,18 +14,23 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja">
-      <body className="antialiased">
-        <header className="bg-gray-900 text-white px-6 py-4 shadow-md">
-          <div className="max-w-5xl mx-auto">
-            <h1 className="text-2xl font-bold tracking-wide">
-              🎌 ANIFLEX
-            </h1>
-            <p className="text-sm text-gray-400 mt-1">アニメ・声優検索アプリ</p>
+      <body className="antialiased bg-[#141414] text-white overflow-x-hidden">
+        <Navbar />
+        <main>{children}</main>
+        {/* フッター */}
+        <footer className="px-4 md:px-16 py-10 text-gray-500 text-xs">
+          <div className="max-w-4xl">
+            <div className="flex gap-5 mb-4 flex-wrap">
+              {["音声説明", "ヘルプセンター", "ギフトカード", "メディアセンター", "投資家向け情報", "採用情報", "利用規約", "プライバシー", "法的事項", "Cookie設定", "会社概要", "お問い合わせ"].map((item) => (
+                <a key={item} href="#" className="hover:underline">{item}</a>
+              ))}
+            </div>
+            <button className="border border-gray-500 text-gray-400 px-4 py-2 text-sm hover:text-white hover:border-white transition mb-4">
+              サービスコード
+            </button>
+            <p>© 2025 ANIFLEX. All rights reserved.</p>
           </div>
-        </header>
-        <main className="max-w-5xl mx-auto px-6 py-8">
-          {children}
-        </main>
+        </footer>
       </body>
     </html>
   );
