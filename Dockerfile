@@ -7,7 +7,8 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci
+# package-lock.json がある場合は npm ci、なければ npm install にフォールバック
+RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
 
 # 開発用ステージ
 FROM base AS development
