@@ -37,10 +37,55 @@ export interface TMDbPersonDetail extends TMDbPerson {
   also_known_as: string[];
 }
 
+export interface TMDbGenre {
+  id: number;
+  name: string;
+}
+
+export interface TMDbNetwork {
+  id: number;
+  name: string;
+  logo_path: string | null;
+}
+
+export interface TMDbCastMember {
+  id: number;
+  name: string;
+  original_name: string;
+  character: string;
+  profile_path: string | null;
+  order: number;
+}
+
+export interface TMDbCredit {
+  cast: TMDbCastMember[];
+  crew: {
+    id: number;
+    name: string;
+    job: string;
+    department: string;
+    profile_path: string | null;
+  }[];
+}
+
+export interface TMDbSeason {
+  id: number;
+  name: string;
+  season_number: number;
+  episode_count: number;
+  air_date: string | null;
+  poster_path: string | null;
+  overview: string;
+}
+
 export interface TMDbTVDetail extends TMDbAnime {
   number_of_episodes: number;
   number_of_seasons: number;
   status: string;
-  genres: { id: number; name: string }[];
-  networks: { id: number; name: string; logo_path: string | null }[];
+  genres: TMDbGenre[];
+  networks: TMDbNetwork[];
+  tagline?: string;
+  homepage?: string;
+  credits?: TMDbCredit;
+  seasons?: TMDbSeason[];
 }
