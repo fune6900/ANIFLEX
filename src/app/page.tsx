@@ -1,4 +1,5 @@
 import HeroSection from "@/components/HeroSection";
+import type { HeroItem } from "@/components/HeroSection";
 import ContentRow from "@/components/ContentRow";
 import type { ContentRowItem } from "@/components/ContentRow";
 import { getPopularAnime, getNewAnime, getTrendingAnime, getPopularVoiceActors } from "@/lib/tmdb";
@@ -50,6 +51,23 @@ export default async function Home() {
     getPopularVoiceActors(),
   ]);
 
+  // ヒーロースライダー用: backdrop_path がある人気アニメ6件
+  const heroAnime: HeroItem[] =
+    popularData.status === "fulfilled"
+      ? popularData.value.results
+          .filter((a) => a.backdrop_path)
+          .slice(0, 6)
+          .map((a) => ({
+            id: a.id,
+            title: a.name,
+            overview: a.overview,
+            backdropPath: a.backdrop_path,
+            year: a.first_air_date?.split("-")[0],
+            match: a.vote_average > 0 ? Math.round(a.vote_average * 10) : undefined,
+            href: `/anime/${a.id}`,
+          }))
+      : [];
+
   const popularAnime =
     popularData.status === "fulfilled"
       ? popularData.value.results.slice(0, 10).map(toCardItem)
@@ -80,7 +98,7 @@ export default async function Home() {
 
   return (
     <div className="bg-[#141414] min-h-screen">
-      <HeroSection />
+      <HeroSection items={heroAnime} />
       <div className="relative z-10 -mt-16 md:-mt-24 pb-20">
         {popularAnime.length > 0 && (
           <ContentRow title="🔥 今期人気アニメ TOP10" items={popularAnime} allHref="/browse/popular" />
