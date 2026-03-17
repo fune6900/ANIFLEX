@@ -158,3 +158,18 @@ export async function getPersonDetail(id: number): Promise<TMDbPersonDetail> {
 export async function getPopularVoiceActors(): Promise<TMDbSearchResponse<TMDbPerson>> {
   return fetchTMDb<TMDbSearchResponse<TMDbPerson>>("/trending/person/week", {});
 }
+
+// ジャンル別アニメ（日本アニメ + 指定ジャンル）
+export async function getAnimeByGenre(
+  genreId: number,
+  page = 1
+): Promise<TMDbSearchResponse<TMDbAnime>> {
+  return fetchTMDb<TMDbSearchResponse<TMDbAnime>>("/discover/tv", {
+    // アニメーション(16) AND 指定ジャンル を組み合わせ
+    with_genres: `${ANIMATION_GENRE_ID},${genreId}`,
+    with_origin_country: "JP",
+    sort_by: "popularity.desc",
+    "vote_count.gte": "5",
+    page: String(page),
+  });
+}
