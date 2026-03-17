@@ -14,6 +14,7 @@ export default function SearchDropdown({ onClose }: SearchDropdownProps) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<TMDbAnime[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -43,16 +44,19 @@ export default function SearchDropdown({ onClose }: SearchDropdownProps) {
       return;
     }
     setLoading(true);
+    setError(null);
     try {
       const res = await fetch(
         `/api/search?q=${encodeURIComponent(q)}`,
         { signal: AbortSignal.timeout(5000) }
       );
-      if (!res.ok) throw new Error("search failed");
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
+      if (data.error) throw new Error(data.error);
       setResults((data.results ?? []).slice(0, 8));
-    } catch {
+    } catch (err) {
       setResults([]);
+      setError(err instanceof Error ? err.message : "検索に失敗しました");
     } finally {
       setLoading(false);
     }
@@ -136,8 +140,15 @@ export default function SearchDropdown({ onClose }: SearchDropdownProps) {
         )}
       </form>
 
+      {/* エラー表示 */}
+      {error && query && (
+        <div className="absolute top-full right-0 mt-1 w-80 bg-[#181818] border border-red-800 px-4 py-3 z-50">
+          <p className="text-red-400 text-xs">{error}</p>
+        </div>
+      )}
+
       {/* 候補ドロップダウン */}
-      {results.length > 0 && (
+      {results.length > 0 && !error && (
         <div className="absolute top-full right-0 mt-1 w-80 md:w-96 bg-[#181818] border border-gray-700 shadow-2xl z-50 max-h-[70vh] overflow-y-auto">
           {results.map((anime) => (
             <button
@@ -201,7 +212,10 @@ export default function SearchDropdown({ onClose }: SearchDropdownProps) {
           {/* すべての結果を見る */}
           {query.trim() && (
             <button
-              onClick={handleSubmit as unknown as React.MouseEventHandler}
+              onClick={() => {
+                router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+                onClose();
+              }}
               className="w-full px-4 py-3 text-center text-[#54b9c5] text-sm hover:bg-[#2a2a2a] transition border-t border-gray-700"
             >
               「{query}」のすべての結果を見る →

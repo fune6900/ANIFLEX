@@ -12,12 +12,23 @@ const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p";
 // アニメーションジャンルID
 const ANIMATION_GENRE_ID = 16;
 
-export function getTMDbApiKey(): string {
+// 認証情報を解決する（TMDB_ACCESS_TOKEN=Bearer形式優先、なければTMDB_API_KEY）
+function resolveAuth(): { headers: Record<string, string>; useBearer: boolean } {
+  const bearerToken = process.env.TMDB_ACCESS_TOKEN;
   const apiKey = process.env.TMDB_API_KEY;
-  if (!apiKey) {
-    throw new Error("TMDB_API_KEY is not set in environment variables");
+
+  if (bearerToken) {
+    return {
+      headers: { Authorization: `Bearer ${bearerToken}` },
+      useBearer: true,
+    };
   }
-  return apiKey;
+  if (apiKey) {
+    return { headers: {}, useBearer: false };
+  }
+  throw new Error(
+    "TMDb認証情報が未設定です。TMDB_ACCESS_TOKEN または TMDB_API_KEY を .env.local に設定してください。"
+  );
 }
 
 export function getImageUrl(
@@ -33,20 +44,25 @@ export async function fetchTMDb<T>(
   params: Record<string, string> = {},
   cacheTime: number = 3600
 ): Promise<T> {
-  const apiKey = getTMDbApiKey();
+  const { headers: authHeaders, useBearer } = resolveAuth();
   const url = new URL(`${TMDB_BASE_URL}${endpoint}`);
 
-  url.searchParams.set("api_key", apiKey);
+  // Bearer認証でない場合はapi_keyをクエリパラメータに付加
+  if (!useBearer) {
+    url.searchParams.set("api_key", process.env.TMDB_API_KEY!);
+  }
   url.searchParams.set("language", "ja-JP");
 
   for (const [key, value] of Object.entries(params)) {
     url.searchParams.set(key, value);
   }
 
-  const fetchOptions: RequestInit =
-    cacheTime === 0
+  const fetchOptions: RequestInit = {
+    headers: authHeaders,
+    ...(cacheTime === 0
       ? { cache: "no-store" }
-      : { next: { revalidate: cacheTime } };
+      : { next: { revalidate: cacheTime } }),
+  };
 
   const response = await fetch(url.toString(), fetchOptions);
 
