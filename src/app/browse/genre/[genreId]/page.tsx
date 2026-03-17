@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getAnimeByGenre, getImageUrl } from "@/lib/tmdb";
+import { getAnimeByGenre, getAnimeByKeyword, resolveKeywordId, getImageUrl } from "@/lib/tmdb";
 import { ANIME_GENRES, findGenre } from "@/lib/genres";
 import type { TMDbAnime } from "@/types/tmdb";
 
@@ -66,10 +66,23 @@ export default async function GenrePage({ params, searchParams }: GenrePageProps
   let error: string | null = null;
 
   try {
-    const data = await getAnimeByGenre(genreId, currentPage);
-    results = data.results;
-    totalPages = data.total_pages;
-    totalResults = data.total_results;
+    let data;
+    if (genre.filterType === "keyword" && genre.keyword) {
+      // キーワード名 → ID を解決してからフェッチ
+      const keywordId = await resolveKeywordId(genre.keyword);
+      if (keywordId == null) {
+        results = [];
+      } else {
+        data = await getAnimeByKeyword(keywordId, currentPage);
+      }
+    } else {
+      data = await getAnimeByGenre(genreId, currentPage);
+    }
+    if (data) {
+      results = data.results;
+      totalPages = data.total_pages;
+      totalResults = data.total_results;
+    }
   } catch {
     error = "データの取得に失敗しました";
   }
