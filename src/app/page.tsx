@@ -83,13 +83,13 @@ export default async function Home() {
       <HeroSection />
       <div className="relative z-10 -mt-16 md:-mt-24 pb-20">
         {popularAnime.length > 0 && (
-          <ContentRow title="🔥 今期人気アニメ TOP10" items={popularAnime} />
+          <ContentRow title="🔥 今期人気アニメ TOP10" items={popularAnime} allHref="/browse/popular" />
         )}
         {trendingAnime.length > 0 && (
-          <ContentRow title="📈 今週のトレンド" items={trendingAnime} />
+          <ContentRow title="📈 今週のトレンド" items={trendingAnime} allHref="/browse/trending" />
         )}
         {newAnime.length > 0 && (
-          <ContentRow title="🆕 新着アニメ" items={newAnime} />
+          <ContentRow title="🆕 新着アニメ" items={newAnime} allHref="/browse/new" />
         )}
         {voiceActors.length > 0 && (
           <ContentRow title="🎤 人気声優" items={voiceActors} />

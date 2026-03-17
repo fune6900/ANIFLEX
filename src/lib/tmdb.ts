@@ -100,17 +100,18 @@ export async function getAnimeDetail(id: number): Promise<TMDbTVDetail> {
 }
 
 // 人気アニメ（日本アニメーション）
-export async function getPopularAnime(): Promise<TMDbSearchResponse<TMDbAnime>> {
+export async function getPopularAnime(page = 1): Promise<TMDbSearchResponse<TMDbAnime>> {
   return fetchTMDb<TMDbSearchResponse<TMDbAnime>>("/discover/tv", {
     with_genres: String(ANIMATION_GENRE_ID),
     with_origin_country: "JP",
     sort_by: "popularity.desc",
     "vote_count.gte": "100",
+    page: String(page),
   });
 }
 
 // 新着アニメ（直近3ヶ月）
-export async function getNewAnime(): Promise<TMDbSearchResponse<TMDbAnime>> {
+export async function getNewAnime(page = 1): Promise<TMDbSearchResponse<TMDbAnime>> {
   const now = new Date();
   const threeMonthsAgo = new Date(now);
   threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
@@ -122,12 +123,13 @@ export async function getNewAnime(): Promise<TMDbSearchResponse<TMDbAnime>> {
     "first_air_date.lte": now.toISOString().split("T")[0],
     "first_air_date.gte": threeMonthsAgo.toISOString().split("T")[0],
     "vote_count.gte": "5",
+    page: String(page),
   });
 }
 
 // トレンドアニメ（週間・日本アニメフィルタ）
-export async function getTrendingAnime(): Promise<TMDbSearchResponse<TMDbAnime>> {
-  return fetchTMDb<TMDbSearchResponse<TMDbAnime>>("/trending/tv/week", {}, 3600);
+export async function getTrendingAnime(page = 1): Promise<TMDbSearchResponse<TMDbAnime>> {
+  return fetchTMDb<TMDbSearchResponse<TMDbAnime>>("/trending/tv/week", { page: String(page) }, 3600);
 }
 
 // ──────────────────────────────────────────

@@ -23,6 +23,7 @@ export interface ContentRowItem {
 interface ContentRowProps {
   title: string;
   items: ContentRowItem[];
+  allHref?: string;
 }
 
 function AnimeCard({ item }: { item: ContentRowItem }) {
@@ -163,7 +164,7 @@ function AnimeCard({ item }: { item: ContentRowItem }) {
   return cardInner;
 }
 
-export default function ContentRow({ title, items }: ContentRowProps) {
+export default function ContentRow({ title, items, allHref }: ContentRowProps) {
   const rowRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
@@ -191,12 +192,27 @@ export default function ContentRow({ title, items }: ContentRowProps) {
       {/* タイトル */}
       <h2 className="text-white font-bold text-base md:text-lg mb-2 md:mb-3 px-4 md:px-12 flex items-center gap-2">
         {title}
-        <span className="text-[#54b9c5] text-sm font-semibold opacity-0 group-hover/row:opacity-100 transition-opacity flex items-center gap-1 cursor-pointer">
-          すべて見る
-          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
-          </svg>
-        </span>
+        {allHref && (
+          <Link
+            href={allHref}
+            className="text-[#54b9c5] text-sm font-semibold opacity-0 group-hover/row:opacity-100 transition-opacity flex items-center gap-1"
+          >
+            すべて見る
+            <svg
+              className="w-3 h-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={3}
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </Link>
+        )}
       </h2>
 
       {/* スクロールコンテナ */}
