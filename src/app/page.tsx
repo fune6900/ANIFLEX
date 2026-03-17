@@ -15,6 +15,7 @@ function toCardItem(anime: TMDbAnime): ContentRowItem {
     match,
     posterPath: anime.poster_path,
     backdropPath: anime.backdrop_path,
+    overview: anime.overview,
     href: `/anime/${anime.id}`,
   };
 }

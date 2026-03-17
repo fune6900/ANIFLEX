@@ -1,8 +1,8 @@
 "use client";
 
-import { useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRef, useState } from "react";
 
 export interface ContentRowItem {
   id: number;
@@ -17,6 +17,7 @@ export interface ContentRowItem {
   overview?: string;
   genres?: string[];
   href?: string;
+  isPortrait?: boolean; // 声優など縦長ポスター用
 }
 
 interface ContentRowProps {
@@ -124,23 +125,32 @@ function AnimeCard({ item }: { item: ContentRowItem }) {
               <p className="text-white text-xs font-semibold truncate mb-1">{item.title}</p>
             )}
 
+            {/* あらすじ */}
+            {item.overview && (
+              <p className="text-xs text-gray-300 line-clamp-2 mt-1 leading-relaxed">
+                {item.overview}
+              </p>
+            )}
+
             {/* ジャンルタグ */}
-            <div className="flex items-center gap-1 text-xs text-gray-400 flex-wrap">
-              {item.genres && item.genres.length > 0 ? (
-                item.genres.slice(0, 3).map((g, i) => (
-                  <span key={g}>
-                    {i > 0 && <span className="w-1 h-1 rounded-full bg-gray-500 inline-block mr-1" />}
-                    {g}
-                  </span>
-                ))
-              ) : (
-                <>
-                  <span>アクション</span>
-                  <span className="w-1 h-1 rounded-full bg-gray-500 inline-block" />
-                  <span>ファンタジー</span>
-                </>
-              )}
-            </div>
+            {!item.overview && (
+              <div className="flex items-center gap-1 text-xs text-gray-400 flex-wrap">
+                {item.genres && item.genres.length > 0 ? (
+                  item.genres.slice(0, 3).map((g, i) => (
+                    <span key={g}>
+                      {i > 0 && <span className="w-1 h-1 rounded-full bg-gray-500 inline-block mr-1" />}
+                      {g}
+                    </span>
+                  ))
+                ) : (
+                  <>
+                    <span>アクション</span>
+                    <span className="w-1 h-1 rounded-full bg-gray-500 inline-block" />
+                    <span>ファンタジー</span>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -183,18 +193,8 @@ export default function ContentRow({ title, items }: ContentRowProps) {
         {title}
         <span className="text-[#54b9c5] text-sm font-semibold opacity-0 group-hover/row:opacity-100 transition-opacity flex items-center gap-1 cursor-pointer">
           すべて見る
-          <svg
-            className="w-3 h-3"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={3}
-              d="M9 5l7 7-7 7"
-            />
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
           </svg>
         </span>
       </h2>
@@ -207,18 +207,8 @@ export default function ContentRow({ title, items }: ContentRowProps) {
             onClick={() => scroll("left")}
             className="hidden md:flex absolute left-0 top-0 bottom-0 z-10 w-10 items-center justify-center bg-black/50 hover:bg-black/70 transition text-white opacity-0 group-hover/row:opacity-100"
           >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
         )}
@@ -241,18 +231,8 @@ export default function ContentRow({ title, items }: ContentRowProps) {
             onClick={() => scroll("right")}
             className="hidden md:flex absolute right-0 top-0 bottom-0 z-10 w-10 items-center justify-center bg-black/50 hover:bg-black/70 transition text-white opacity-0 group-hover/row:opacity-100"
           >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
         )}

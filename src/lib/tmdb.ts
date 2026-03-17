@@ -12,19 +12,24 @@ const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p";
 // アニメーションジャンルID
 const ANIMATION_GENRE_ID = 16;
 
-// 認証情報を解決する（TMDB_ACCESS_TOKEN=Bearer形式優先、なければTMDB_API_KEY）
-function resolveAuth(): { headers: Record<string, string>; useBearer: boolean } {
+// 認証情報を解決する
+// TMDB_ACCESS_TOKEN があれば Bearer（優先）
+// TMDB_API_KEY が JWT (eyJ...) ならそれも Bearer として扱う
+// それ以外は api_key クエリパラメータ
+function resolveAuth(): { headers: Record<string, string>; apiKeyParam?: string } {
   const bearerToken = process.env.TMDB_ACCESS_TOKEN;
   const apiKey = process.env.TMDB_API_KEY;
 
   if (bearerToken) {
-    return {
-      headers: { Authorization: `Bearer ${bearerToken}` },
-      useBearer: true,
-    };
+    return { headers: { Authorization: `Bearer ${bearerToken}` } };
   }
   if (apiKey) {
-    return { headers: {}, useBearer: false };
+    // JWT 形式（eyJ で始まる）なら Bearer トークンとして使用
+    if (apiKey.startsWith("eyJ")) {
+      return { headers: { Authorization: `Bearer ${apiKey}` } };
+    }
+    // 従来の v3 API キー
+    return { headers: {}, apiKeyParam: apiKey };
   }
   throw new Error(
     "TMDb認証情報が未設定です。TMDB_ACCESS_TOKEN または TMDB_API_KEY を .env.local に設定してください。"
@@ -35,7 +40,7 @@ export function getImageUrl(
   path: string | null,
   size: "w185" | "w342" | "w500" | "w780" | "original" = "w342"
 ): string {
-  if (!path) return "/placeholder.png";
+  if (!path) return "";
   return `${TMDB_IMAGE_BASE_URL}/${size}${path}`;
 }
 
@@ -44,13 +49,14 @@ export async function fetchTMDb<T>(
   params: Record<string, string> = {},
   cacheTime: number = 3600
 ): Promise<T> {
-  const { headers: authHeaders, useBearer } = resolveAuth();
+  const { headers: authHeaders, apiKeyParam } = resolveAuth();
   const url = new URL(`${TMDB_BASE_URL}${endpoint}`);
 
-  // Bearer認証でない場合はapi_keyをクエリパラメータに付加
-  if (!useBearer) {
-    url.searchParams.set("api_key", process.env.TMDB_API_KEY!);
+  // v3 API キーの場合はクエリパラメータに付加
+  if (apiKeyParam) {
+    url.searchParams.set("api_key", apiKeyParam);
   }
+
   url.searchParams.set("language", "ja-JP");
 
   for (const [key, value] of Object.entries(params)) {
