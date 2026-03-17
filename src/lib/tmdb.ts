@@ -2,6 +2,8 @@
 
 import type {
   TMDbAnime,
+  TMDbPerson,
+  TMDbPersonDetail,
   TMDbSearchResponse,
   TMDbTVDetail,
 } from "@/types/tmdb";
@@ -126,4 +128,26 @@ export async function getNewAnime(): Promise<TMDbSearchResponse<TMDbAnime>> {
 // トレンドアニメ（週間・日本アニメフィルタ）
 export async function getTrendingAnime(): Promise<TMDbSearchResponse<TMDbAnime>> {
   return fetchTMDb<TMDbSearchResponse<TMDbAnime>>("/trending/tv/week", {}, 3600);
+}
+
+// ──────────────────────────────────────────
+// 声優（Person）関連
+// ──────────────────────────────────────────
+
+// 声優検索
+export async function searchPerson(
+  query: string
+): Promise<TMDbSearchResponse<TMDbPerson>> {
+  return fetchTMDb<TMDbSearchResponse<TMDbPerson>>(
+    "/search/person",
+    { query, include_adult: "false" },
+    0
+  );
+}
+
+// 声優詳細取得（出演作付き）
+export async function getPersonDetail(id: number): Promise<TMDbPersonDetail> {
+  return fetchTMDb<TMDbPersonDetail>(`/person/${id}`, {
+    append_to_response: "combined_credits",
+  });
 }

@@ -40,6 +40,9 @@ export default function Navbar() {
             <Link href="/search?q=アニメ" className="hover:text-white transition">
               アニメ
             </Link>
+            <Link href="/voice-actors" className="hover:text-white transition">
+              声優
+            </Link>
           </nav>
 
           {/* モバイルハンバーガー */}
@@ -77,6 +80,13 @@ export default function Navbar() {
                   onClick={() => setMenuOpen(false)}
                 >
                   アニメ
+                </Link>
+                <Link
+                  href="/voice-actors"
+                  className="block px-5 py-2 text-sm text-gray-200 hover:text-white hover:underline"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  声優
                 </Link>
               </div>
             )}

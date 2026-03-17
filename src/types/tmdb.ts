@@ -21,6 +21,17 @@ export interface TMDbSearchResponse<T> {
   total_results: number;
 }
 
+export interface TMDbPersonKnownFor {
+  id: number;
+  name?: string;
+  title?: string;
+  media_type: string;
+  poster_path: string | null;
+  vote_average?: number;
+  first_air_date?: string;
+  release_date?: string;
+}
+
 export interface TMDbPerson {
   id: number;
   name: string;
@@ -28,13 +39,32 @@ export interface TMDbPerson {
   profile_path: string | null;
   known_for_department: string;
   popularity: number;
+  known_for?: TMDbPersonKnownFor[];
+}
+
+export interface TMDbPersonCreditCast {
+  id: number;
+  name?: string;
+  title?: string;
+  character: string;
+  media_type: string;
+  poster_path: string | null;
+  vote_average: number;
+  first_air_date?: string;
+  release_date?: string;
+  genre_ids?: number[];
+  origin_country?: string[];
 }
 
 export interface TMDbPersonDetail extends TMDbPerson {
   biography: string;
   birthday: string | null;
+  deathday: string | null;
   place_of_birth: string | null;
   also_known_as: string[];
+  combined_credits?: {
+    cast: TMDbPersonCreditCast[];
+  };
 }
 
 export interface TMDbGenre {
