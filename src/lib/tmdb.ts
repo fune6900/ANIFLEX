@@ -151,3 +151,8 @@ export async function getPersonDetail(id: number): Promise<TMDbPersonDetail> {
     append_to_response: "combined_credits",
   });
 }
+
+// トップページ用: 人気声優（週間トレンド人物からActing部門を抽出）
+export async function getPopularVoiceActors(): Promise<TMDbSearchResponse<TMDbPerson>> {
+  return fetchTMDb<TMDbSearchResponse<TMDbPerson>>("/trending/person/week", {});
+}

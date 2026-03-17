@@ -1,8 +1,8 @@
 import HeroSection from "@/components/HeroSection";
 import ContentRow from "@/components/ContentRow";
 import type { ContentRowItem } from "@/components/ContentRow";
-import { getPopularAnime, getNewAnime, getTrendingAnime } from "@/lib/tmdb";
-import type { TMDbAnime } from "@/types/tmdb";
+import { getPopularAnime, getNewAnime, getTrendingAnime, getPopularVoiceActors } from "@/lib/tmdb";
+import type { TMDbAnime, TMDbPerson } from "@/types/tmdb";
 
 // TMDb アニメデータを ContentRowItem に変換
 function toCardItem(anime: TMDbAnime): ContentRowItem {
@@ -20,22 +20,34 @@ function toCardItem(anime: TMDbAnime): ContentRowItem {
   };
 }
 
-// 声優セクション（ハードコード維持）
-const voiceActors: ContentRowItem[] = [
-  { id: 9001, title: "花江夏樹", year: "代表作: 鬼滅", rating: "CV", gradient: "linear-gradient(135deg, #141e30 0%, #243b55 100%)" },
-  { id: 9002, title: "悠木碧", year: "代表作: まどか", rating: "CV", gradient: "linear-gradient(135deg, #3a1c71 0%, #d76d77 100%)" },
-  { id: 9003, title: "梶裕貴", year: "代表作: エレン", rating: "CV", gradient: "linear-gradient(135deg, #134e5e 0%, #71b280 100%)" },
-  { id: 9004, title: "釘宮理恵", year: "代表作: ルイズ", rating: "CV", gradient: "linear-gradient(135deg, #c94b4b 0%, #4b134f 100%)" },
-  { id: 9005, title: "宮野真守", year: "代表作: デスノート", rating: "CV", gradient: "linear-gradient(135deg, #1a1a2e 0%, #ffd700 100%)" },
-  { id: 9006, title: "水樹奈々", year: "代表作: フェイト", rating: "CV", gradient: "linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)" },
-];
+// TMDb 人物データを ContentRowItem に変換（声優カード）
+function toPersonCardItem(person: TMDbPerson): ContentRowItem {
+  const knownFor = person.known_for
+    ?.map((k) => k.name ?? k.title)
+    .filter(Boolean)
+    .slice(0, 2)
+    .join(" / ");
+  return {
+    id: person.id,
+    title: person.name,
+    year: knownFor ? `代表作: ${knownFor}` : undefined,
+    rating: "CV",
+    match: Math.min(99, Math.round(person.popularity)),
+    gradient: "linear-gradient(135deg, #1a1a2e 0%, #243b55 100%)",
+    posterPath: person.profile_path,   // 縦長プロフィール写真
+    backdropPath: null,
+    isPortrait: true,
+    href: `/voice-actors/${person.id}`,
+  };
+}
 
 export default async function Home() {
   // TMDb API から並行フェッチ
-  const [popularData, newData, trendingData] = await Promise.allSettled([
+  const [popularData, newData, trendingData, voiceActorData] = await Promise.allSettled([
     getPopularAnime(),
     getNewAnime(),
     getTrendingAnime(),
+    getPopularVoiceActors(),
   ]);
 
   const popularAnime =
@@ -57,6 +69,15 @@ export default async function Home() {
           .map(toCardItem)
       : [];
 
+  // 週間トレンド人物から Acting 部門を優先して声優カードを生成
+  const voiceActors =
+    voiceActorData.status === "fulfilled"
+      ? voiceActorData.value.results
+          .filter((p) => p.known_for_department === "Acting")
+          .slice(0, 10)
+          .map(toPersonCardItem)
+      : [];
+
   return (
     <div className="bg-[#141414] min-h-screen">
       <HeroSection />
@@ -70,7 +91,9 @@ export default async function Home() {
         {newAnime.length > 0 && (
           <ContentRow title="🆕 新着アニメ" items={newAnime} />
         )}
-        <ContentRow title="🎤 人気声優" items={voiceActors} />
+        {voiceActors.length > 0 && (
+          <ContentRow title="🎤 人気声優" items={voiceActors} />
+        )}
       </div>
     </div>
   );
