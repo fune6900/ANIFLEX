@@ -173,3 +173,41 @@ export async function getAnimeByGenre(
     page: String(page),
   });
 }
+
+// ──────────────────────────────────────────
+// キーワードベースのジャンル検索
+// ──────────────────────────────────────────
+
+interface TMDbKeyword {
+  id: number;
+  name: string;
+}
+
+interface TMDbKeywordSearchResponse {
+  results: TMDbKeyword[];
+}
+
+/** TMDb キーワード名 → キーワード ID を解決（24時間キャッシュ） */
+export async function resolveKeywordId(query: string): Promise<number | null> {
+  const data = await fetchTMDb<TMDbKeywordSearchResponse>(
+    "/search/keyword",
+    { query },
+    86400
+  );
+  return data.results[0]?.id ?? null;
+}
+
+/** キーワード ID で日本アニメを取得 */
+export async function getAnimeByKeyword(
+  keywordId: number,
+  page = 1
+): Promise<TMDbSearchResponse<TMDbAnime>> {
+  return fetchTMDb<TMDbSearchResponse<TMDbAnime>>("/discover/tv", {
+    with_keywords: String(keywordId),
+    with_genres: String(ANIMATION_GENRE_ID),
+    with_origin_country: "JP",
+    sort_by: "popularity.desc",
+    "vote_count.gte": "5",
+    page: String(page),
+  });
+}
