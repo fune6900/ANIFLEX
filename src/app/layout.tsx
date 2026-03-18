@@ -3,13 +3,13 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 
 export const metadata: Metadata = {
-  title: "ANIFLEX - アニメ・声優検索",
+  title: "ANIFLIX - アニメ・声優検索",
   description: "TMDb APIを使ったアニメと声優の検索アプリ",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "ANIFLEX",
+    title: "ANIFLIX",
   },
   icons: {
     icon: [
@@ -44,7 +44,7 @@ export default function RootLayout({
             <button className="border border-gray-500 text-gray-400 px-4 py-2 text-sm hover:text-white hover:border-white transition mb-4">
               サービスコード
             </button>
-            <p>© 2025 ANIFLEX. All rights reserved.</p>
+            <p>© 2025 ANIFLIX. All rights reserved.</p>
           </div>
         </footer>
       </body>

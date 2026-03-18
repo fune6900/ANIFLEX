@@ -30,7 +30,7 @@ export default function Navbar() {
         <div className="flex items-center gap-6 md:gap-10">
           <Link href="/">
             <span className="text-[#E50914] font-extrabold text-2xl md:text-3xl tracking-widest select-none cursor-pointer">
-              ANIFLEX
+              ANIFLIX
             </span>
           </Link>
 

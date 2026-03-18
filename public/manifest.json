@@ -1,6 +1,6 @@
 {
-  "name": "ANIFLEX",
-  "short_name": "ANIFLEX",
+  "name": "ANIFLIX",
+  "short_name": "ANIFLIX",
   "description": "アニメ・声優検索アプリ",
   "start_url": "/",
   "display": "standalone",
