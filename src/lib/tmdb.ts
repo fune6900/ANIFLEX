@@ -2,6 +2,7 @@
 
 import type {
   TMDbAnime,
+  TMDbExternalIds,
   TMDbPerson,
   TMDbPersonDetail,
   TMDbSearchResponse,
@@ -240,6 +241,11 @@ export async function getAnimeByEra(
 // ──────────────────────────────────────────
 // 動画（トレーラー）
 // ──────────────────────────────────────────
+
+/** アニメの外部ID（SNS連携）を取得 */
+export async function getAnimeExternalIds(animeId: number): Promise<TMDbExternalIds> {
+  return fetchTMDb<TMDbExternalIds>(`/tv/${animeId}/external_ids`, {}, 86400);
+}
 
 interface TMDbVideosResponse {
   id: number;
