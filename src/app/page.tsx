@@ -1,3 +1,4 @@
+import Link from "next/link";
 import HeroSection from "@/components/HeroSection";
 import type { HeroItem } from "@/components/HeroSection";
 import ContentRow from "@/components/ContentRow";
@@ -13,6 +14,7 @@ import {
 } from "@/lib/tmdb";
 import { ANIME_GENRES } from "@/lib/genres";
 import type { AnimeGenre } from "@/lib/genres";
+import { ANIME_ERAS } from "@/lib/eras";
 import type { TMDbAnime, TMDbPerson } from "@/types/tmdb";
 
 // TMDb アニメデータを ContentRowItem に変換
@@ -145,6 +147,34 @@ export default async function Home() {
         {voiceActors.length > 0 && (
           <ContentRow title="🎤 人気声優" items={voiceActors} />
         )}
+
+        {/* 年代別セクション */}
+        <div className="px-4 md:px-12 mt-6 mb-4 flex items-center gap-3">
+          <h2 className="text-white font-black text-lg md:text-xl">年代で探す</h2>
+          <div className="flex-1 h-px bg-gray-800" />
+        </div>
+        <div className="flex gap-3 px-4 md:px-12 mb-8 overflow-x-auto pb-1"
+          style={{ scrollbarWidth: "none" }}>
+          {ANIME_ERAS.map((era) => (
+            <Link
+              key={era.decade}
+              href={`/browse/era/${era.decade}`}
+              className={`flex-shrink-0 relative overflow-hidden rounded-lg w-36 md:w-44 h-24 md:h-28 bg-gradient-to-br ${era.color} group`}
+            >
+              <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors" />
+              <div className="absolute bottom-2 right-3 text-white/10 font-black text-5xl leading-none select-none">
+                {era.shortLabel}
+              </div>
+              <div className="relative p-3 h-full flex flex-col justify-between">
+                <span className="text-2xl">{era.emoji}</span>
+                <div>
+                  <p className="text-white font-black text-base leading-tight">{era.label}</p>
+                  <p className="text-gray-300 text-[10px] mt-0.5 line-clamp-1">{era.description}</p>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
 
         {/* ジャンル別セクション */}
         <div className="px-4 md:px-12 mt-6 mb-4 flex items-center gap-3">
