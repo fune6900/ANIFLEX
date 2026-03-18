@@ -211,3 +211,27 @@ export async function getAnimeByKeyword(
     page: String(page),
   });
 }
+
+// ──────────────────────────────────────────
+// 年代別アニメ
+// ──────────────────────────────────────────
+
+/** 指定した年代（decade = 1990 → 1990〜1999年）の日本アニメを取得
+ *  sortBy: "popularity.desc"（人気順）または "first_air_date.asc"（放送日順）
+ */
+export async function getAnimeByEra(
+  decade: number,
+  page = 1,
+  sortBy: "popularity.desc" | "first_air_date.asc" = "popularity.desc"
+): Promise<TMDbSearchResponse<TMDbAnime>> {
+  const startDate = `${decade}-01-01`;
+  const endDate   = `${decade + 9}-12-31`;
+  return fetchTMDb<TMDbSearchResponse<TMDbAnime>>("/discover/tv", {
+    with_genres: String(ANIMATION_GENRE_ID),
+    with_origin_country: "JP",
+    "first_air_date.gte": startDate,
+    "first_air_date.lte": endDate,
+    sort_by: sortBy,
+    page: String(page),
+  });
+}
