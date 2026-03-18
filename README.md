@@ -1,4 +1,4 @@
-# ANIFLEX
+# ANIFLIX
 
 NetflixのUI/UXを模倣したアニメ・声優発見プラットフォームです。「アニメ」+「Netflix」を組み合わせたネーミングで、日本語UIで構築されています。
 
@@ -127,4 +127,4 @@ docker-compose up
 
 ## ライセンス
 
-© 2025 ANIFLEX
+© 2025 ANIFLIX

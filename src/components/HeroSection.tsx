@@ -90,7 +90,7 @@ export default function HeroSection({ items }: HeroSectionProps) {
         {/* バッジ */}
         <div className="flex items-center gap-2 mb-3">
           <span className="bg-[#E50914] text-white text-xs font-bold px-2 py-0.5 tracking-widest">
-            ANIFLEX
+            ANIFLIX
           </span>
           {item.year && (
             <span className="text-gray-300 text-xs">{item.year}</span>
