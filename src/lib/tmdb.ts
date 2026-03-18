@@ -6,6 +6,7 @@ import type {
   TMDbPersonDetail,
   TMDbSearchResponse,
   TMDbTVDetail,
+  TMDbVideo,
 } from "@/types/tmdb";
 
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
@@ -233,5 +234,31 @@ export async function getAnimeByEra(
     "first_air_date.lte": endDate,
     sort_by: sortBy,
     page: String(page),
+  });
+}
+
+// ──────────────────────────────────────────
+// 動画（トレーラー）
+// ──────────────────────────────────────────
+
+interface TMDbVideosResponse {
+  id: number;
+  results: TMDbVideo[];
+}
+
+/** アニメの YouTube 動画一覧を取得し優先度順にソートして返す */
+export async function getAnimeVideos(animeId: number): Promise<TMDbVideo[]> {
+  const data = await fetchTMDb<TMDbVideosResponse>(
+    `/tv/${animeId}/videos`,
+    {},
+    3600
+  );
+  const yt = data.results.filter((v) => v.site === "YouTube");
+  // 優先度: 公式Trailer > 公式Teaser > Trailer > Opening Credits > その他
+  const order = ["Trailer", "Teaser", "Opening Credits", "Clip", "Featurette"];
+  return yt.sort((a, b) => {
+    const aScore = (a.official ? 10 : 0) + (10 - order.indexOf(a.type));
+    const bScore = (b.official ? 10 : 0) + (10 - order.indexOf(b.type));
+    return bScore - aScore;
   });
 }
