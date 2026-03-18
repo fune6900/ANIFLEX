@@ -2,7 +2,17 @@ import HeroSection from "@/components/HeroSection";
 import type { HeroItem } from "@/components/HeroSection";
 import ContentRow from "@/components/ContentRow";
 import type { ContentRowItem } from "@/components/ContentRow";
-import { getPopularAnime, getNewAnime, getTrendingAnime, getPopularVoiceActors } from "@/lib/tmdb";
+import {
+  getPopularAnime,
+  getNewAnime,
+  getTrendingAnime,
+  getPopularVoiceActors,
+  getAnimeByGenre,
+  getAnimeByKeyword,
+  resolveKeywordId,
+} from "@/lib/tmdb";
+import { ANIME_GENRES } from "@/lib/genres";
+import type { AnimeGenre } from "@/lib/genres";
 import type { TMDbAnime, TMDbPerson } from "@/types/tmdb";
 
 // TMDb アニメデータを ContentRowItem に変換
@@ -35,21 +45,40 @@ function toPersonCardItem(person: TMDbPerson): ContentRowItem {
     rating: "CV",
     match: Math.min(99, Math.round(person.popularity)),
     gradient: "linear-gradient(135deg, #1a1a2e 0%, #243b55 100%)",
-    posterPath: person.profile_path,   // 縦長プロフィール写真
+    posterPath: person.profile_path,
     backdropPath: null,
     isPortrait: true,
     href: `/voice-actors/${person.id}`,
   };
 }
 
+// ジャンル1件分のアイテムを取得（genre/keyword どちらにも対応）
+async function fetchGenreItems(genre: AnimeGenre): Promise<ContentRowItem[]> {
+  try {
+    if (genre.filterType === "keyword" && genre.keyword) {
+      const keywordId = await resolveKeywordId(genre.keyword);
+      if (!keywordId) return [];
+      const data = await getAnimeByKeyword(keywordId);
+      return data.results.slice(0, 10).map(toCardItem);
+    } else {
+      const data = await getAnimeByGenre(genre.id);
+      return data.results.slice(0, 10).map(toCardItem);
+    }
+  } catch {
+    return [];
+  }
+}
+
 export default async function Home() {
-  // TMDb API から並行フェッチ
-  const [popularData, newData, trendingData, voiceActorData] = await Promise.allSettled([
-    getPopularAnime(),
-    getNewAnime(),
-    getTrendingAnime(),
-    getPopularVoiceActors(),
-  ]);
+  // 既存4列 + 全ジャンル を並列フェッチ
+  const [popularData, newData, trendingData, voiceActorData, ...genreResults] =
+    await Promise.allSettled([
+      getPopularAnime(),
+      getNewAnime(),
+      getTrendingAnime(),
+      getPopularVoiceActors(),
+      ...ANIME_GENRES.map((g) => fetchGenreItems(g)),
+    ]);
 
   // ヒーロースライダー用: backdrop_path がある人気アニメ6件
   const heroAnime: HeroItem[] =
@@ -78,7 +107,6 @@ export default async function Home() {
       ? newData.value.results.slice(0, 10).map(toCardItem)
       : [];
 
-  // トレンドから日本アニメっぽいものを抽出
   const trendingAnime =
     trendingData.status === "fulfilled"
       ? trendingData.value.results
@@ -87,7 +115,6 @@ export default async function Home() {
           .map(toCardItem)
       : [];
 
-  // 週間トレンド人物から Acting 部門を優先して声優カードを生成
   const voiceActors =
     voiceActorData.status === "fulfilled"
       ? voiceActorData.value.results
@@ -96,10 +123,16 @@ export default async function Home() {
           .map(toPersonCardItem)
       : [];
 
+  // ジャンル別アイテム（ANIME_GENRES と同順）
+  const genreItems = genreResults.map((r) =>
+    r.status === "fulfilled" ? (r.value as ContentRowItem[]) : []
+  );
+
   return (
     <div className="bg-[#141414] min-h-screen">
       <HeroSection items={heroAnime} />
       <div className="relative z-10 -mt-16 md:-mt-24 pb-20">
+        {/* 既存ランキング・トレンド列 */}
         {popularAnime.length > 0 && (
           <ContentRow title="🔥 今期人気アニメ TOP10" items={popularAnime} allHref="/browse/popular" />
         )}
@@ -112,6 +145,25 @@ export default async function Home() {
         {voiceActors.length > 0 && (
           <ContentRow title="🎤 人気声優" items={voiceActors} />
         )}
+
+        {/* ジャンル別セクション */}
+        <div className="px-4 md:px-12 mt-6 mb-4 flex items-center gap-3">
+          <h2 className="text-white font-black text-lg md:text-xl">ジャンルで探す</h2>
+          <div className="flex-1 h-px bg-gray-800" />
+        </div>
+
+        {ANIME_GENRES.map((genre, i) => {
+          const items = genreItems[i] ?? [];
+          if (items.length === 0) return null;
+          return (
+            <ContentRow
+              key={genre.id}
+              title={`${genre.emoji} ${genre.name}`}
+              items={items}
+              allHref={`/browse/genre/${genre.id}`}
+            />
+          );
+        })}
       </div>
     </div>
   );
