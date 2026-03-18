@@ -108,6 +108,15 @@ export interface TMDbSeason {
   overview: string;
 }
 
+export interface TMDbVideo {
+  id: string;
+  key: string;
+  name: string;
+  site: string;
+  type: string;
+  official: boolean;
+}
+
 export interface TMDbTVDetail extends TMDbAnime {
   number_of_episodes: number;
   number_of_seasons: number;
