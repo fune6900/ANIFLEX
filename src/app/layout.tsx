@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
+import BottomNav from "@/components/BottomNav";
 
 export const metadata: Metadata = {
   title: "ANIFLIX - アニメ・声優検索",
@@ -33,6 +34,7 @@ export default function RootLayout({
       <body className="antialiased bg-[#141414] text-white overflow-x-hidden">
         <Navbar />
         <main>{children}</main>
+        <BottomNav />
         {/* フッター */}
         <footer className="px-4 md:px-16 py-10 text-gray-500 text-xs">
           <div className="max-w-4xl">
