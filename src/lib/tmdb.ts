@@ -3,6 +3,7 @@
 import type {
   TMDbAnime,
   TMDbExternalIds,
+  TMDbMovie,
   TMDbPerson,
   TMDbPersonDetail,
   TMDbSearchResponse,
@@ -140,11 +141,12 @@ export async function getTrendingAnime(page = 1): Promise<TMDbSearchResponse<TMD
 
 // 声優検索
 export async function searchPerson(
-  query: string
+  query: string,
+  page = 1
 ): Promise<TMDbSearchResponse<TMDbPerson>> {
   return fetchTMDb<TMDbSearchResponse<TMDbPerson>>(
     "/search/person",
-    { query, include_adult: "false" },
+    { query, include_adult: "false", page: String(page) },
     0
   );
 }
@@ -234,6 +236,41 @@ export async function getAnimeByEra(
     "first_air_date.gte": startDate,
     "first_air_date.lte": endDate,
     sort_by: sortBy,
+    page: String(page),
+  });
+}
+
+// ──────────────────────────────────────────
+// アニメ映画
+// ──────────────────────────────────────────
+
+/** 日本のアニメ映画を取得 */
+export async function getAnimeMovies(page = 1): Promise<TMDbSearchResponse<TMDbMovie>> {
+  return fetchTMDb<TMDbSearchResponse<TMDbMovie>>("/discover/movie", {
+    with_genres: String(ANIMATION_GENRE_ID),
+    with_origin_country: "JP",
+    sort_by: "popularity.desc",
+    "vote_count.gte": "10",
+    page: String(page),
+  });
+}
+
+// ──────────────────────────────────────────
+// シーズン別アニメ
+// ──────────────────────────────────────────
+
+/** 指定した期間（クールの開始日〜終了日）の日本アニメを取得 */
+export async function getAnimeBySeason(
+  dateFrom: string,
+  dateTo: string,
+  page = 1
+): Promise<TMDbSearchResponse<TMDbAnime>> {
+  return fetchTMDb<TMDbSearchResponse<TMDbAnime>>("/discover/tv", {
+    with_genres: String(ANIMATION_GENRE_ID),
+    with_origin_country: "JP",
+    "first_air_date.gte": dateFrom,
+    "first_air_date.lte": dateTo,
+    sort_by: "popularity.desc",
     page: String(page),
   });
 }

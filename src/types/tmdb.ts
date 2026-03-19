@@ -124,6 +124,19 @@ export interface TMDbExternalIds {
   imdb_id: string | null;
 }
 
+export interface TMDbMovie {
+  id: number;
+  title: string;
+  original_title: string;
+  overview: string;
+  poster_path: string | null;
+  backdrop_path: string | null;
+  release_date: string;
+  vote_average: number;
+  vote_count: number;
+  genre_ids: number[];
+}
+
 export interface TMDbTVDetail extends TMDbAnime {
   number_of_episodes: number;
   number_of_seasons: number;
