@@ -2,8 +2,10 @@ import type React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getAnimeDetail, getAnimeExternalIds, getAnimeVideos, getImageUrl } from "@/lib/tmdb";
-import type { TMDbCastMember, TMDbExternalIds, TMDbVideo } from "@/types/tmdb";
+import { getAnimeByGenre, getAnimeDetail, getAnimeExternalIds, getAnimeVideos, getImageUrl } from "@/lib/tmdb";
+import type { TMDbAnime, TMDbCastMember, TMDbExternalIds, TMDbVideo } from "@/types/tmdb";
+import ContentRow from "@/components/ContentRow";
+import type { ContentRowItem } from "@/components/ContentRow";
 
 interface AnimeDetailPageProps {
   params: Promise<{ id: string }>;
@@ -63,6 +65,16 @@ export default async function AnimeDetailPage({ params }: AnimeDetailPageProps) 
   const year = anime.first_air_date?.split("-")[0];
   const score = anime.vote_average?.toFixed(1);
   const cast: TMDbCastMember[] = anime.credits?.cast?.slice(0, 12) ?? [];
+
+  // 同ジャンルのアニメを最大10件取得（自分自身を除く）
+  const firstGenreId = anime.genres?.[0]?.id ?? null;
+  let relatedAnime: TMDbAnime[] = [];
+  if (firstGenreId) {
+    const related = await getAnimeByGenre(firstGenreId).catch(() => null);
+    relatedAnime = (related?.results ?? [])
+      .filter((a) => a.id !== numId)
+      .slice(0, 10);
+  }
 
   // OP / ED 動画（専用セクションに表示）
   const opVideos = videos.filter((v) => v.type === "Opening Credits");
@@ -497,6 +509,26 @@ export default async function AnimeDetailPage({ params }: AnimeDetailPageProps) 
                   </div>
                 ))}
             </div>
+          </section>
+        )}
+
+        {/* 関連アニメ（同ジャンル） */}
+        {relatedAnime.length > 0 && (
+          <section className="mt-14 -mx-4 md:-mx-12">
+            <ContentRow
+              title={`${anime.genres![0].name} の関連作品`}
+              allHref={`/browse/genre/${anime.genres![0].id}`}
+              items={relatedAnime.map((a): ContentRowItem => ({
+                id: a.id,
+                title: a.name,
+                year: a.first_air_date?.split("-")[0],
+                rating: a.vote_average ? `★ ${a.vote_average.toFixed(1)}` : undefined,
+                posterPath: a.poster_path ?? null,
+                backdropPath: a.backdrop_path ?? null,
+                overview: a.overview ?? undefined,
+                href: `/anime/${a.id}`,
+              }))}
+            />
           </section>
         )}
 
