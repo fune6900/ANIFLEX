@@ -276,6 +276,54 @@ export async function getAnimeBySeason(
 }
 
 // ──────────────────────────────────────────
+// 放送中アニメ
+// ──────────────────────────────────────────
+
+/** 現在放送中の日本アニメを取得 */
+export async function getAiringAnime(page = 1): Promise<TMDbSearchResponse<TMDbAnime>> {
+  return fetchTMDb<TMDbSearchResponse<TMDbAnime>>("/discover/tv", {
+    with_genres: String(ANIMATION_GENRE_ID),
+    with_origin_country: "JP",
+    sort_by: "popularity.desc",
+    with_status: "0", // Returning Series (連続放送中)
+    "air_date.lte": new Date().toISOString().split("T")[0],
+    page: String(page),
+  });
+}
+
+// ──────────────────────────────────────────
+// スタジオ別アニメ
+// ──────────────────────────────────────────
+
+/** 指定スタジオ（制作会社ID）の日本アニメを取得 */
+export async function getAnimeByStudio(
+  companyId: number,
+  page = 1
+): Promise<TMDbSearchResponse<TMDbAnime>> {
+  return fetchTMDb<TMDbSearchResponse<TMDbAnime>>("/discover/tv", {
+    with_companies: String(companyId),
+    with_genres: String(ANIMATION_GENRE_ID),
+    sort_by: "popularity.desc",
+    page: String(page),
+  });
+}
+
+// ──────────────────────────────────────────
+// 映画検索
+// ──────────────────────────────────────────
+
+/** 映画タイトル検索 */
+export async function searchMovie(
+  query: string
+): Promise<TMDbSearchResponse<TMDbMovie>> {
+  return fetchTMDb<TMDbSearchResponse<TMDbMovie>>(
+    "/search/movie",
+    { query, include_adult: "false" },
+    0
+  );
+}
+
+// ──────────────────────────────────────────
 // 動画（トレーラー）
 // ──────────────────────────────────────────
 
