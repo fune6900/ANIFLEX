@@ -221,7 +221,7 @@ function AnimeCard({ item }: { item: ContentRowItem }) {
   const thumbnail = (
     <div
       ref={cardRef}
-      className={`relative flex-shrink-0 w-[140px] sm:w-[170px] md:w-[200px] lg:w-[230px] cursor-pointer`}
+      className={`relative flex-shrink-0 w-[120px] sm:w-[140px] md:w-[160px] lg:w-[180px] cursor-pointer`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
@@ -231,16 +231,16 @@ function AnimeCard({ item }: { item: ContentRowItem }) {
         }`}
       >
         <div
-          className="w-full aspect-[2/3] md:aspect-video relative overflow-hidden"
+          className="w-full aspect-[2/3] relative overflow-hidden"
           style={
             !item.posterPath && !item.backdropPath
               ? { background: item.gradient ?? "linear-gradient(135deg,#1a1a2e,#16213e)" }
               : undefined
           }
         >
-          {item.backdropPath || item.posterPath ? (
+          {item.posterPath || item.backdropPath ? (
             <Image
-              src={`https://image.tmdb.org/t/p/${item.backdropPath ? "w500" : "w342"}${item.backdropPath ?? item.posterPath}`}
+              src={`https://image.tmdb.org/t/p/w342${item.posterPath ?? item.backdropPath}`}
               alt={item.title}
               fill
               sizes="(max-width: 640px) 140px, (max-width: 768px) 170px, (max-width: 1024px) 200px, 230px"

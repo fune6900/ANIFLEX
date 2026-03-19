@@ -117,6 +117,13 @@ export interface TMDbVideo {
   official: boolean;
 }
 
+export interface TMDbExternalIds {
+  twitter_id: string | null;
+  instagram_id: string | null;
+  facebook_id: string | null;
+  imdb_id: string | null;
+}
+
 export interface TMDbTVDetail extends TMDbAnime {
   number_of_episodes: number;
   number_of_seasons: number;
