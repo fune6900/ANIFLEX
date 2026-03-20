@@ -4,7 +4,7 @@ import { searchPerson } from "@/lib/tmdb";
 import { getImageUrl } from "@/lib/tmdb";
 import type { TMDbPerson } from "@/types/tmdb";
 
-const PER_PAGE = 20; // TMDb は1ページ最大20件
+const PER_PAGE = 20;
 
 function sanitize(raw: string): string {
   return raw
@@ -14,8 +14,27 @@ function sanitize(raw: string): string {
     .slice(0, 100);
 }
 
+const SORT_OPTIONS = [
+  { value: "popularity",  label: "人気順" },
+  { value: "name_asc",    label: "名前順（あ→z）" },
+  { value: "name_desc",   label: "名前順（z→あ）" },
+];
+
+const DEPT_OPTIONS = [
+  { value: "",           label: "すべて" },
+  { value: "Acting",     label: "俳優・声優" },
+  { value: "Production", label: "プロデュース" },
+  { value: "Directing",  label: "監督" },
+  { value: "Writing",    label: "脚本・執筆" },
+];
+
 interface VoiceActorsPageProps {
-  searchParams: Promise<{ q?: string; page?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    page?: string;
+    sort?: string;
+    dept?: string;
+  }>;
 }
 
 function PersonGridCard({ person }: { person: TMDbPerson }) {
@@ -33,7 +52,7 @@ function PersonGridCard({ person }: { person: TMDbPerson }) {
             src={getImageUrl(person.profile_path, "w342")}
             alt={person.name}
             fill
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+            sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 18vw"
             className="object-cover object-top group-hover:scale-105 transition-transform duration-300"
           />
         ) : (
@@ -46,9 +65,7 @@ function PersonGridCard({ person }: { person: TMDbPerson }) {
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-300 pointer-events-none" />
         <div className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/90 to-transparent" />
         <div className="absolute top-2 right-2 bg-black/70 rounded px-1.5 py-0.5">
-          <span className="text-[#54b9c5] text-xs font-bold">
-            ★ {person.popularity.toFixed(1)}
-          </span>
+          <span className="text-[#54b9c5] text-xs font-bold">★ {person.popularity.toFixed(1)}</span>
         </div>
         <div className="absolute bottom-0 left-0 right-0 p-2">
           <p className="text-white text-xs font-semibold truncate leading-tight">{person.name}</p>
@@ -63,19 +80,26 @@ function PersonGridCard({ person }: { person: TMDbPerson }) {
 
 function Pagination({
   query,
+  sort,
+  dept,
   currentPage,
   totalPages,
 }: {
   query: string;
+  sort: string;
+  dept: string;
   currentPage: number;
   totalPages: number;
 }) {
   if (totalPages <= 1) return null;
 
-  const pageUrl = (p: number) =>
-    `/voice-actors?q=${encodeURIComponent(query)}&page=${p}`;
+  function pageUrl(p: number) {
+    const params = new URLSearchParams({ q: query, page: String(p) });
+    if (sort !== "popularity") params.set("sort", sort);
+    if (dept) params.set("dept", dept);
+    return `/voice-actors?${params.toString()}`;
+  }
 
-  // 表示するページ番号の範囲（現在ページ周辺5件）
   const range = 2;
   const pages: number[] = [];
   for (
@@ -88,59 +112,34 @@ function Pagination({
 
   return (
     <div className="flex items-center justify-center gap-1 mt-10 flex-wrap">
-      {/* 前へ */}
       {currentPage > 1 && (
-        <Link
-          href={pageUrl(currentPage - 1)}
-          className="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded text-sm transition"
-        >
-          ← 前へ
-        </Link>
+        <Link href={pageUrl(currentPage - 1)} className="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded text-sm transition">← 前へ</Link>
       )}
-
-      {/* 先頭 */}
       {pages[0] > 1 && (
         <>
           <Link href={pageUrl(1)} className="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded text-sm transition">1</Link>
           {pages[0] > 2 && <span className="text-gray-500 px-1">…</span>}
         </>
       )}
-
-      {/* ページ番号 */}
       {pages.map((p) => (
         <Link
           key={p}
           href={pageUrl(p)}
           className={`px-3 py-2 rounded text-sm transition ${
-            p === currentPage
-              ? "bg-[#E50914] text-white font-bold"
-              : "bg-gray-800 hover:bg-gray-700 text-white"
+            p === currentPage ? "bg-[#E50914] text-white font-bold" : "bg-gray-800 hover:bg-gray-700 text-white"
           }`}
         >
           {p}
         </Link>
       ))}
-
-      {/* 末尾 */}
       {pages[pages.length - 1] < totalPages && (
         <>
-          {pages[pages.length - 1] < totalPages - 1 && (
-            <span className="text-gray-500 px-1">…</span>
-          )}
-          <Link href={pageUrl(totalPages)} className="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded text-sm transition">
-            {totalPages}
-          </Link>
+          {pages[pages.length - 1] < totalPages - 1 && <span className="text-gray-500 px-1">…</span>}
+          <Link href={pageUrl(totalPages)} className="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded text-sm transition">{totalPages}</Link>
         </>
       )}
-
-      {/* 次へ */}
       {currentPage < totalPages && (
-        <Link
-          href={pageUrl(currentPage + 1)}
-          className="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded text-sm transition"
-        >
-          次へ →
-        </Link>
+        <Link href={pageUrl(currentPage + 1)} className="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded text-sm transition">次へ →</Link>
       )}
     </div>
   );
@@ -151,6 +150,8 @@ export default async function VoiceActorsPage({ searchParams }: VoiceActorsPageP
   const rawQuery = params.q ?? "";
   const query = sanitize(rawQuery);
   const currentPage = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
+  const sort = params.sort ?? "popularity";
+  const dept = params.dept ?? "";
 
   let results: TMDbPerson[] = [];
   let totalResults = 0;
@@ -160,37 +161,44 @@ export default async function VoiceActorsPage({ searchParams }: VoiceActorsPageP
   if (query) {
     try {
       const data = await searchPerson(query, currentPage);
-      results = data.results;
+      let persons = data.results;
+
+      // 部門フィルター（クライアントサイド）
+      if (dept) {
+        persons = persons.filter((p) => p.known_for_department === dept);
+      }
+
+      // ソート（クライアントサイド）
+      if (sort === "name_asc") {
+        persons = [...persons].sort((a, b) => a.name.localeCompare(b.name, "ja"));
+      } else if (sort === "name_desc") {
+        persons = [...persons].sort((a, b) => b.name.localeCompare(a.name, "ja"));
+      }
+      // popularity (default) はTMDb側でソート済み
+
+      results = persons;
       totalResults = data.total_results;
-      totalPages = Math.min(data.total_pages, 500); // TMDb上限
+      totalPages = Math.min(data.total_pages, 500);
     } catch {
       error = "検索中にエラーが発生しました";
     }
   }
 
+  const hasFilters = sort !== "popularity" || !!dept;
+
   return (
     <div className="min-h-screen bg-[#141414] pt-24 pb-24 px-4 md:px-12">
       {/* ヘッダー */}
       <div className="mb-8">
-        {query ? (
-          <>
-            <p className="text-gray-400 text-sm mb-1">「{query}」の検索結果</p>
-            <h1 className="text-white text-2xl font-bold">
-              {totalResults > 0
-                ? `${totalResults.toLocaleString()}件の声優が見つかりました`
-                : "該当する声優が見つかりませんでした"}
-            </h1>
-            {totalPages > 1 && (
-              <p className="text-gray-500 text-sm mt-1">
-                {currentPage} / {totalPages} ページ（1ページ {PER_PAGE}件）
-              </p>
-            )}
-          </>
-        ) : (
-          <>
-            <h1 className="text-white text-2xl font-bold">声優を検索</h1>
-            <p className="text-gray-400 text-sm mt-1">声優・俳優の名前で検索できます</p>
-          </>
+        <h1 className="text-white text-2xl font-bold">声優を検索</h1>
+        {query && totalResults > 0 && (
+          <p className="text-gray-400 text-sm mt-1">
+            「{query}」: {totalResults.toLocaleString()}件
+            {totalPages > 1 && ` · ${currentPage} / ${totalPages} ページ`}
+          </p>
+        )}
+        {query && results.length === 0 && !error && (
+          <p className="text-gray-400 text-sm mt-1">「{query}」に該当する声優が見つかりませんでした</p>
         )}
       </div>
 
@@ -202,8 +210,8 @@ export default async function VoiceActorsPage({ searchParams }: VoiceActorsPageP
       )}
 
       {/* 検索フォーム */}
-      <form method="GET" className="mb-10 max-w-xl">
-        <div className="flex items-center border border-gray-600 bg-[#1a1a1a] rounded overflow-hidden focus-within:border-white transition-colors">
+      <form method="GET" className="mb-6 max-w-2xl">
+        <div className="flex items-center border border-gray-600 bg-[#1a1a1a] rounded overflow-hidden focus-within:border-white transition-colors mb-4">
           <svg className="w-5 h-5 text-gray-400 ml-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
@@ -216,13 +224,70 @@ export default async function VoiceActorsPage({ searchParams }: VoiceActorsPageP
             autoComplete="off"
             className="flex-1 bg-transparent text-white px-4 py-3 text-sm outline-none placeholder-gray-500"
           />
-          <button
-            type="submit"
-            className="bg-[#E50914] text-white px-5 py-3 text-sm font-semibold hover:bg-red-700 transition"
-          >
+          <button type="submit" className="bg-[#E50914] text-white px-5 py-3 text-sm font-semibold hover:bg-red-700 transition">
             検索
           </button>
         </div>
+
+        {/* 絞り込み・ソートバー */}
+        <div className="flex flex-wrap gap-3 items-center bg-[#1a1a1a] border border-gray-700 rounded px-4 py-3">
+          <span className="text-gray-500 text-xs font-semibold uppercase tracking-wider shrink-0">絞り込み:</span>
+
+          <div className="flex items-center gap-2">
+            <label className="text-gray-400 text-xs">部門</label>
+            <select
+              name="dept"
+              defaultValue={dept}
+              className="bg-[#2a2a2a] border border-gray-600 text-white text-xs rounded px-2 py-1.5 outline-none focus:border-gray-400 transition"
+            >
+              {DEPT_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <label className="text-gray-400 text-xs">並び順</label>
+            <select
+              name="sort"
+              defaultValue={sort}
+              className="bg-[#2a2a2a] border border-gray-600 text-white text-xs rounded px-2 py-1.5 outline-none focus:border-gray-400 transition"
+            >
+              {SORT_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <button type="submit" className="text-xs bg-gray-700 hover:bg-gray-600 text-white px-3 py-1.5 rounded transition">
+            適用
+          </button>
+
+          {hasFilters && (
+            <Link
+              href={`/voice-actors${query ? `?q=${encodeURIComponent(query)}` : ""}`}
+              className="text-xs text-gray-500 hover:text-gray-300 transition"
+            >
+              リセット
+            </Link>
+          )}
+        </div>
+
+        {/* アクティブフィルターバッジ */}
+        {hasFilters && (
+          <div className="flex flex-wrap gap-2 mt-2">
+            {dept && (
+              <span className="bg-[#54b9c5]/20 text-[#54b9c5] text-xs px-2.5 py-1 rounded-full border border-[#54b9c5]/30">
+                {DEPT_OPTIONS.find((o) => o.value === dept)?.label}
+              </span>
+            )}
+            {sort !== "popularity" && (
+              <span className="bg-[#54b9c5]/20 text-[#54b9c5] text-xs px-2.5 py-1 rounded-full border border-[#54b9c5]/30">
+                {SORT_OPTIONS.find((o) => o.value === sort)?.label}
+              </span>
+            )}
+          </div>
+        )}
       </form>
 
       {/* 結果グリッド */}
@@ -236,15 +301,7 @@ export default async function VoiceActorsPage({ searchParams }: VoiceActorsPageP
 
       {/* ページネーション */}
       {query && totalPages > 1 && (
-        <Pagination query={query} currentPage={currentPage} totalPages={totalPages} />
-      )}
-
-      {/* 結果なし */}
-      {query && results.length === 0 && !error && (
-        <div className="text-center py-20">
-          <p className="text-gray-400 text-lg mb-2">「{query}」に一致する声優は見つかりませんでした</p>
-          <p className="text-gray-600 text-sm">別のキーワードで試してみてください</p>
-        </div>
+        <Pagination query={query} sort={sort} dept={dept} currentPage={currentPage} totalPages={totalPages} />
       )}
 
       {/* 初期表示 */}
@@ -253,7 +310,8 @@ export default async function VoiceActorsPage({ searchParams }: VoiceActorsPageP
           <svg className="w-16 h-16 text-gray-700 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>
-          <p className="text-gray-400">上のフォームに声優名を入力して検索してください</p>
+          <p className="text-gray-400 mb-1">上のフォームに声優名を入力して検索してください</p>
+          <p className="text-gray-600 text-sm">部門や並び順で絞り込みもできます</p>
         </div>
       )}
     </div>

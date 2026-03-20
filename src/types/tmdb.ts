@@ -137,6 +137,18 @@ export interface TMDbMovie {
   genre_ids: number[];
 }
 
+export interface TMDbMovieDetail extends TMDbMovie {
+  genres: TMDbGenre[];
+  runtime: number | null;
+  tagline?: string;
+  homepage?: string;
+  status: string;
+  credits?: TMDbCredit;
+  external_ids?: TMDbExternalIds;
+  videos?: { results: TMDbVideo[] };
+  recommendations?: TMDbSearchResponse<TMDbMovie>;
+}
+
 export interface TMDbTVDetail extends TMDbAnime {
   number_of_episodes: number;
   number_of_seasons: number;

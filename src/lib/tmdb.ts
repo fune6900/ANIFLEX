@@ -4,6 +4,7 @@ import type {
   TMDbAnime,
   TMDbExternalIds,
   TMDbMovie,
+  TMDbMovieDetail,
   TMDbPerson,
   TMDbPersonDetail,
   TMDbSearchResponse,
@@ -82,6 +83,51 @@ export async function fetchTMDb<T>(
   }
 
   return response.json() as Promise<T>;
+}
+
+// ──────────────────────────────────────────
+// 詳細条件アニメ検索（discover）
+// ──────────────────────────────────────────
+
+export interface DiscoverAnimeParams {
+  genreId?: number;
+  yearFrom?: number;
+  yearTo?: number;
+  minScore?: number;
+  sortBy?: string;
+  status?: string;
+  page?: number;
+}
+
+/** 詳細条件でアニメを検索（キーワード非対応・フィルターのみ） */
+export async function discoverAnime(
+  params: DiscoverAnimeParams
+): Promise<TMDbSearchResponse<TMDbAnime>> {
+  const query: Record<string, string> = {
+    with_genres: String(ANIMATION_GENRE_ID),
+    with_origin_country: "JP",
+    sort_by: params.sortBy ?? "popularity.desc",
+    page: String(params.page ?? 1),
+  };
+
+  if (params.genreId) {
+    query.with_genres = `${ANIMATION_GENRE_ID},${params.genreId}`;
+  }
+  if (params.yearFrom) {
+    query["first_air_date.gte"] = `${params.yearFrom}-01-01`;
+  }
+  if (params.yearTo) {
+    query["first_air_date.lte"] = `${params.yearTo}-12-31`;
+  }
+  if (params.minScore) {
+    query["vote_average.gte"] = String(params.minScore);
+    query["vote_count.gte"] = "20";
+  }
+  if (params.status) {
+    query.with_status = params.status;
+  }
+
+  return fetchTMDb<TMDbSearchResponse<TMDbAnime>>("/discover/tv", query, 0);
 }
 
 // アニメ検索（サーバーサイド用）
@@ -305,6 +351,17 @@ export async function getAnimeByStudio(
     with_genres: String(ANIMATION_GENRE_ID),
     sort_by: "popularity.desc",
     page: String(page),
+  });
+}
+
+// ──────────────────────────────────────────
+// 映画詳細
+// ──────────────────────────────────────────
+
+/** 映画詳細取得（クレジット・動画・外部ID付き） */
+export async function getMovieDetail(id: number): Promise<TMDbMovieDetail> {
+  return fetchTMDb<TMDbMovieDetail>(`/movie/${id}`, {
+    append_to_response: "credits,videos,external_ids,recommendations",
   });
 }
 
