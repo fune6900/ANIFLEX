@@ -53,7 +53,7 @@ export function getImageUrl(
 export async function fetchTMDb<T>(
   endpoint: string,
   params: Record<string, string> = {},
-  cacheTime: number = 3600
+  cacheTime: number = 0
 ): Promise<T> {
   const { headers: authHeaders, apiKeyParam } = resolveAuth();
   const url = new URL(`${TMDB_BASE_URL}${endpoint}`);
@@ -178,7 +178,7 @@ export async function getNewAnime(page = 1): Promise<TMDbSearchResponse<TMDbAnim
 
 // トレンドアニメ（週間・日本アニメフィルタ）
 export async function getTrendingAnime(page = 1): Promise<TMDbSearchResponse<TMDbAnime>> {
-  return fetchTMDb<TMDbSearchResponse<TMDbAnime>>("/trending/tv/week", { page: String(page) }, 3600);
+  return fetchTMDb<TMDbSearchResponse<TMDbAnime>>("/trending/tv/week", { page: String(page) });
 }
 
 // ──────────────────────────────────────────
@@ -247,19 +247,35 @@ export async function resolveKeywordId(query: string): Promise<number | null> {
   return data.results[0]?.id ?? null;
 }
 
-/** キーワード ID で日本アニメを取得 */
+/** キーワード ID（複数可・OR 検索）で日本アニメを取得 */
 export async function getAnimeByKeyword(
-  keywordId: number,
+  keywordIds: number | number[],
   page = 1
 ): Promise<TMDbSearchResponse<TMDbAnime>> {
+  const ids = Array.isArray(keywordIds) ? keywordIds : [keywordIds];
   return fetchTMDb<TMDbSearchResponse<TMDbAnime>>("/discover/tv", {
-    with_keywords: String(keywordId),
+    with_keywords: ids.join("|"), // | = OR 検索
     with_genres: String(ANIMATION_GENRE_ID),
     with_origin_country: "JP",
     sort_by: "popularity.desc",
     "vote_count.gte": "5",
     page: String(page),
   });
+}
+
+/** 複数キーワード名から ID を解決し OR 検索で日本アニメを取得 */
+export async function getAnimeByKeywords(
+  keywords: string[],
+  page = 1
+): Promise<TMDbSearchResponse<TMDbAnime>> {
+  const ids = (
+    await Promise.all(keywords.map((kw) => resolveKeywordId(kw)))
+  ).filter((id): id is number => id !== null);
+
+  if (ids.length === 0) {
+    return { page: 1, results: [], total_pages: 0, total_results: 0 };
+  }
+  return getAnimeByKeyword(ids, page);
 }
 
 // ──────────────────────────────────────────
@@ -398,8 +414,7 @@ interface TMDbVideosResponse {
 export async function getAnimeVideos(animeId: number): Promise<TMDbVideo[]> {
   const data = await fetchTMDb<TMDbVideosResponse>(
     `/tv/${animeId}/videos`,
-    {},
-    3600
+    {}
   );
   const yt = data.results.filter((v) => v.site === "YouTube");
   // 優先度: 公式Trailer > 公式Teaser > Trailer > Opening Credits > その他

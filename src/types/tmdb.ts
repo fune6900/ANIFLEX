@@ -30,6 +30,8 @@ export interface TMDbPersonKnownFor {
   vote_average?: number;
   first_air_date?: string;
   release_date?: string;
+  genre_ids?: number[];
+  origin_country?: string[];
 }
 
 export interface TMDbPerson {
