@@ -8,6 +8,7 @@ import type {
   TMDbPerson,
   TMDbPersonDetail,
   TMDbSearchResponse,
+  TMDbSeasonDetail,
   TMDbTVDetail,
   TMDbVideo,
 } from "@/types/tmdb";
@@ -146,6 +147,14 @@ export async function getAnimeDetail(id: number): Promise<TMDbTVDetail> {
   return fetchTMDb<TMDbTVDetail>(`/tv/${id}`, {
     append_to_response: "credits",
   });
+}
+
+/** シーズンのエピソード一覧を取得 */
+export async function getAnimeSeasonEpisodes(
+  animeId: number,
+  seasonNumber: number
+): Promise<TMDbSeasonDetail> {
+  return fetchTMDb<TMDbSeasonDetail>(`/tv/${animeId}/season/${seasonNumber}`, {});
 }
 
 // 人気アニメ（日本アニメーション）

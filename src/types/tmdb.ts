@@ -110,6 +110,29 @@ export interface TMDbSeason {
   overview: string;
 }
 
+export interface TMDbEpisode {
+  id: number;
+  name: string;
+  overview: string;
+  episode_number: number;
+  season_number: number;
+  air_date: string | null;
+  still_path: string | null;
+  vote_average: number;
+  vote_count: number;
+  runtime: number | null;
+}
+
+export interface TMDbSeasonDetail {
+  id: number;
+  name: string;
+  overview: string;
+  season_number: number;
+  air_date: string | null;
+  poster_path: string | null;
+  episodes: TMDbEpisode[];
+}
+
 export interface TMDbVideo {
   id: string;
   key: string;
