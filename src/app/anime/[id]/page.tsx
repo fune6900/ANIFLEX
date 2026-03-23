@@ -7,6 +7,7 @@ import type { TMDbAnime, TMDbCastMember, TMDbExternalIds, TMDbTVDetail, TMDbVide
 import ContentRow from "@/components/ContentRow";
 import type { ContentRowItem } from "@/components/ContentRow";
 import SeasonEpisodes from "@/components/SeasonEpisodes";
+import SeasonTimeline from "@/components/SeasonTimeline";
 
 interface AnimeDetailPageProps {
   params: Promise<{ id: string }>;
@@ -527,6 +528,11 @@ export default async function AnimeDetailPage({ params }: AnimeDetailPageProps) 
               ))}
             </div>
           </section>
+        )}
+
+        {/* ヒストリー（シリーズ年表）*/}
+        {anime.seasons && anime.seasons.filter((s) => s.season_number > 0).length > 0 && (
+          <SeasonTimeline seasons={anime.seasons} />
         )}
 
         {/* シーズン・エピソード一覧 */}
