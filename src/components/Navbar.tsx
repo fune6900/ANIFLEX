@@ -3,12 +3,10 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import SearchDropdown from "@/components/SearchDropdown";
-import { ANIME_ERAS } from "@/lib/eras";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [eraMenuOpen, setEraMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
   useEffect(() => {
@@ -59,27 +57,10 @@ export default function Navbar() {
               ジャンル
             </Link>
 
-            {/* 年代ドロップダウン */}
-            <div className="relative group">
-              <button className="flex items-center gap-1 hover:text-white transition py-1">
-                年代
-                <svg className="w-3.5 h-3.5 transition-transform group-hover:rotate-180" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
-              </button>
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 w-52 bg-[#141414] border border-gray-700 shadow-2xl rounded-sm py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
-                <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-[#141414] border-l border-t border-gray-700 rotate-45" />
-                {ANIME_ERAS.map((era) => (
-                  <Link key={era.decade} href={`/browse/era/${era.decade}`} className="flex items-center gap-3 px-4 py-2 text-gray-300 hover:text-white hover:bg-white/10 transition text-xs">
-                    <span className="text-base leading-none">{era.emoji}</span>
-                    <div>
-                      <p className="font-semibold">{era.label}</p>
-                      <p className="text-gray-500 text-[10px] truncate">{era.description}</p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
+            {/* 年代 → 専用ページへ */}
+            <Link href="/browse/eras" className="hover:text-white transition">
+              年代
+            </Link>
 
             <Link href="/voice-actors" className="hover:text-white transition">声優</Link>
           </nav>
@@ -107,23 +88,7 @@ export default function Navbar() {
                 </Link>
                 <Link href="/browse/seasons" className="block px-5 py-2 text-sm text-gray-200 hover:text-white hover:underline" onClick={() => setMenuOpen(false)}>シーズン</Link>
                 <Link href="/browse/genres" className="block px-5 py-2 text-sm text-gray-200 hover:text-white hover:underline" onClick={() => setMenuOpen(false)}>ジャンル</Link>
-
-                {/* 年代 */}
-                <button className="w-full flex items-center justify-between px-5 py-2 text-sm text-gray-200 hover:text-white" onClick={() => setEraMenuOpen(!eraMenuOpen)}>
-                  年代
-                  <svg className={`w-3.5 h-3.5 transition-transform ${eraMenuOpen ? "rotate-180" : ""}`} fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                </button>
-                {eraMenuOpen && (
-                  <div className="border-t border-gray-700 pt-1 pb-1">
-                    {ANIME_ERAS.map((era) => (
-                      <Link key={era.decade} href={`/browse/era/${era.decade}`} className="flex items-center gap-2 px-7 py-1.5 text-xs text-gray-400 hover:text-white hover:underline" onClick={() => setMenuOpen(false)}>
-                        <span>{era.emoji}</span>{era.label}
-                      </Link>
-                    ))}
-                  </div>
-                )}
+                <Link href="/browse/eras" className="block px-5 py-2 text-sm text-gray-200 hover:text-white hover:underline" onClick={() => setMenuOpen(false)}>年代</Link>
 
                 <Link href="/voice-actors" className="block px-5 py-2 text-sm text-gray-200 hover:text-white hover:underline" onClick={() => setMenuOpen(false)}>声優</Link>
               </div>

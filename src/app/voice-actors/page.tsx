@@ -1,8 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
-import { searchPerson } from "@/lib/tmdb";
+import { searchPerson, getPopularVoiceActors } from "@/lib/tmdb";
 import { getImageUrl } from "@/lib/tmdb";
 import type { TMDbPerson } from "@/types/tmdb";
+
+function hasJapaneseName(name: string): boolean {
+  return /[\u3040-\u30ff\u4e00-\u9faf]/.test(name);
+}
 
 const PER_PAGE = 20;
 
@@ -157,6 +161,7 @@ export default async function VoiceActorsPage({ searchParams }: VoiceActorsPageP
   let totalResults = 0;
   let totalPages = 0;
   let error: string | null = null;
+  let isDefaultView = false;
 
   if (query) {
     try {
@@ -182,6 +187,32 @@ export default async function VoiceActorsPage({ searchParams }: VoiceActorsPageP
     } catch {
       error = "検索中にエラーが発生しました";
     }
+  } else {
+    // クエリなし: 日本の人気声優をデフォルト表示
+    isDefaultView = true;
+    try {
+      const data = await getPopularVoiceActors();
+      let persons = data.results.filter(
+        (p) =>
+          p.known_for_department === "Acting" &&
+          (
+            hasJapaneseName(p.name) ||
+            p.known_for?.some(
+              (k) =>
+                (k.origin_country as string[] | undefined)?.includes("JP") ||
+                (k.genre_ids as number[] | undefined)?.includes(16)
+            )
+          )
+      );
+      if (dept) {
+        persons = persons.filter((p) => p.known_for_department === dept);
+      }
+      results = persons;
+      totalResults = persons.length;
+      totalPages = 1;
+    } catch {
+      // デフォルト表示に失敗してもエラーは出さない
+    }
   }
 
   const hasFilters = sort !== "popularity" || !!dept;
@@ -191,6 +222,9 @@ export default async function VoiceActorsPage({ searchParams }: VoiceActorsPageP
       {/* ヘッダー */}
       <div className="mb-8">
         <h1 className="text-white text-2xl font-bold">声優を検索</h1>
+        {isDefaultView && results.length > 0 && (
+          <p className="text-gray-400 text-sm mt-1">🇯🇵 日本の人気声優 · {results.length}件</p>
+        )}
         {query && totalResults > 0 && (
           <p className="text-gray-400 text-sm mt-1">
             「{query}」: {totalResults.toLocaleString()}件
@@ -302,17 +336,6 @@ export default async function VoiceActorsPage({ searchParams }: VoiceActorsPageP
       {/* ページネーション */}
       {query && totalPages > 1 && (
         <Pagination query={query} sort={sort} dept={dept} currentPage={currentPage} totalPages={totalPages} />
-      )}
-
-      {/* 初期表示 */}
-      {!query && (
-        <div className="text-center py-20">
-          <svg className="w-16 h-16 text-gray-700 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-          </svg>
-          <p className="text-gray-400 mb-1">上のフォームに声優名を入力して検索してください</p>
-          <p className="text-gray-600 text-sm">部門や並び順で絞り込みもできます</p>
-        </div>
       )}
     </div>
   );

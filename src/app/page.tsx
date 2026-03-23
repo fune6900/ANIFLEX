@@ -70,6 +70,11 @@ async function fetchGenreItems(genre: AnimeGenre): Promise<ContentRowItem[]> {
   }
 }
 
+// 日本語名かどうか（ひらがな・カタカナ・漢字を含む）
+function hasJapaneseName(name: string): boolean {
+  return /[\u3040-\u30ff\u4e00-\u9faf]/.test(name);
+}
+
 export default async function Home() {
   // 現在のシーズンを取得
   const currentSeason = getRecentSeasons(1)[0];
@@ -124,10 +129,13 @@ export default async function Home() {
       ? voiceActorData.value.results
           .filter((p) =>
             p.known_for_department === "Acting" &&
-            p.known_for?.some(
-              (k) =>
-                (k.origin_country as string[] | undefined)?.includes("JP") ||
-                (k.genre_ids as number[] | undefined)?.includes(16)
+            (
+              hasJapaneseName(p.name) ||
+              p.known_for?.some(
+                (k) =>
+                  (k.origin_country as string[] | undefined)?.includes("JP") ||
+                  (k.genre_ids as number[] | undefined)?.includes(16)
+              )
             )
           )
           .slice(0, 10)
