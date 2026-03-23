@@ -204,9 +204,14 @@ export async function getPersonDetail(id: number): Promise<TMDbPersonDetail> {
   });
 }
 
-// トップページ用: 人気声優（週間トレンド人物からActing部門を抽出）
+/// トップページ用: 人気声優（週間トレンド人物からActing部門を抽出）
 export async function getPopularVoiceActors(): Promise<TMDbSearchResponse<TMDbPerson>> {
   return fetchTMDb<TMDbSearchResponse<TMDbPerson>>("/trending/person/week", {});
+}
+
+/** 日本の声優一覧（language=ja-JP で人気人物を取得） */
+export async function getJapaneseVoiceActors(page = 1): Promise<TMDbSearchResponse<TMDbPerson>> {
+  return fetchTMDb<TMDbSearchResponse<TMDbPerson>>("/person/popular", { page: String(page) });
 }
 
 // ジャンル別アニメ（日本アニメ + 指定ジャンル）

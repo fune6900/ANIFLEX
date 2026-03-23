@@ -1,8 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import { searchPerson, getPopularVoiceActors } from "@/lib/tmdb";
+import { searchPerson, getJapaneseVoiceActors } from "@/lib/tmdb";
 import { getImageUrl } from "@/lib/tmdb";
 import type { TMDbPerson } from "@/types/tmdb";
+import VoiceActorInfiniteGrid from "@/components/VoiceActorInfiniteGrid";
 
 function hasJapaneseName(name: string): boolean {
   return /[\u3040-\u30ff\u4e00-\u9faf]/.test(name);
@@ -188,10 +189,10 @@ export default async function VoiceActorsPage({ searchParams }: VoiceActorsPageP
       error = "検索中にエラーが発生しました";
     }
   } else {
-    // クエリなし: 日本の人気声優をデフォルト表示
+    // クエリなし: 日本出身声優一覧（無限スクロール用の初期データを取得）
     isDefaultView = true;
     try {
-      const data = await getPopularVoiceActors();
+      const data = await getJapaneseVoiceActors(1);
       let persons = data.results.filter(
         (p) =>
           p.known_for_department === "Acting" &&
@@ -204,12 +205,9 @@ export default async function VoiceActorsPage({ searchParams }: VoiceActorsPageP
             )
           )
       );
-      if (dept) {
-        persons = persons.filter((p) => p.known_for_department === dept);
-      }
       results = persons;
-      totalResults = persons.length;
-      totalPages = 1;
+      totalResults = data.total_results;
+      totalPages = data.total_pages;
     } catch {
       // デフォルト表示に失敗してもエラーは出さない
     }
@@ -223,7 +221,7 @@ export default async function VoiceActorsPage({ searchParams }: VoiceActorsPageP
       <div className="mb-8">
         <h1 className="text-white text-2xl font-bold">声優を検索</h1>
         {isDefaultView && results.length > 0 && (
-          <p className="text-gray-400 text-sm mt-1">🇯🇵 日本の人気声優 · {results.length}件</p>
+          <p className="text-gray-400 text-sm mt-1">🇯🇵 日本出身声優 · 無限スクロールで全件表示</p>
         )}
         {query && totalResults > 0 && (
           <p className="text-gray-400 text-sm mt-1">
@@ -325,15 +323,25 @@ export default async function VoiceActorsPage({ searchParams }: VoiceActorsPageP
       </form>
 
       {/* 結果グリッド */}
-      {results.length > 0 && (
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3 md:gap-4">
-          {results.map((person) => (
-            <PersonGridCard key={person.id} person={person} />
-          ))}
-        </div>
+      {isDefaultView ? (
+        results.length > 0 && (
+          <VoiceActorInfiniteGrid
+            initialItems={results}
+            initialPage={1}
+            totalPages={totalPages}
+          />
+        )
+      ) : (
+        results.length > 0 && (
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3 md:gap-4">
+            {results.map((person) => (
+              <PersonGridCard key={person.id} person={person} />
+            ))}
+          </div>
+        )
       )}
 
-      {/* ページネーション */}
+      {/* ページネーション（検索時のみ） */}
       {query && totalPages > 1 && (
         <Pagination query={query} sort={sort} dept={dept} currentPage={currentPage} totalPages={totalPages} />
       )}

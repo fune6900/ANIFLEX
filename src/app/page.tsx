@@ -10,6 +10,7 @@ import {
   getAnimeByGenre,
   getAnimeByKeywords,
   getAnimeBySeason,
+  getAnimeVideos,
 } from "@/lib/tmdb";
 import { ANIME_GENRES } from "@/lib/genres";
 import type { AnimeGenre } from "@/lib/genres";
@@ -89,22 +90,30 @@ export default async function Home() {
       ...ANIME_GENRES.map((g) => fetchGenreItems(g)),
     ]);
 
-  // ヒーロースライダー用: backdrop_path がある今期アニメ6件
-  const heroAnime: HeroItem[] =
+  // ヒーロースライダー用: backdrop_path がある今期アニメ6件 + トレーラーキー取得
+  const heroCandidates =
     currentSeasonData.status === "fulfilled"
-      ? currentSeasonData.value.results
-          .filter((a) => a.backdrop_path)
-          .slice(0, 6)
-          .map((a) => ({
-            id: a.id,
-            title: a.name,
-            overview: a.overview,
-            backdropPath: a.backdrop_path,
-            year: a.first_air_date?.split("-")[0],
-            match: a.vote_average > 0 ? Math.round(a.vote_average * 10) : undefined,
-            href: `/anime/${a.id}`,
-          }))
+      ? currentSeasonData.value.results.filter((a) => a.backdrop_path).slice(0, 6)
       : [];
+
+  const trailerKeys = await Promise.all(
+    heroCandidates.map((a) =>
+      getAnimeVideos(a.id)
+        .then((vids) => vids[0]?.key ?? null)
+        .catch(() => null)
+    )
+  );
+
+  const heroAnime: HeroItem[] = heroCandidates.map((a, i) => ({
+    id: a.id,
+    title: a.name,
+    overview: a.overview,
+    backdropPath: a.backdrop_path,
+    year: a.first_air_date?.split("-")[0],
+    match: a.vote_average > 0 ? Math.round(a.vote_average * 10) : undefined,
+    href: `/anime/${a.id}`,
+    trailerKey: trailerKeys[i] ?? undefined,
+  }));
 
   const popularAnime =
     currentSeasonData.status === "fulfilled"

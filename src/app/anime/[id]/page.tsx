@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAnimeByGenre, getAnimeDetail, getAnimeExternalIds, getAnimeVideos, getImageUrl } from "@/lib/tmdb";
-import type { TMDbAnime, TMDbCastMember, TMDbExternalIds, TMDbVideo } from "@/types/tmdb";
+import type { TMDbAnime, TMDbCastMember, TMDbExternalIds, TMDbTVDetail, TMDbVideo } from "@/types/tmdb";
 import ContentRow from "@/components/ContentRow";
 import type { ContentRowItem } from "@/components/ContentRow";
 
@@ -11,14 +11,66 @@ interface AnimeDetailPageProps {
   params: Promise<{ id: string }>;
 }
 
-function StatusBadge({ status }: { status: string }) {
-  const map: Record<string, { label: string; color: string }> = {
-    "Returning Series": { label: "放送中", color: "text-green-400 border-green-600" },
-    "Ended":            { label: "完結",   color: "text-gray-400 border-gray-600" },
-    "Canceled":         { label: "打ち切り", color: "text-red-400 border-red-700" },
-    "In Production":    { label: "制作中", color: "text-yellow-400 border-yellow-600" },
-  };
-  const s = map[status] ?? { label: status, color: "text-gray-400 border-gray-600" };
+function getSeasonStart(d: Date): Date {
+  const m = d.getMonth(), y = d.getFullYear();
+  if (m < 3)  return new Date(y, 0,  1);
+  if (m < 6)  return new Date(y, 3,  1);
+  if (m < 9)  return new Date(y, 6,  1);
+  return new Date(y, 9, 1);
+}
+function getSeasonEnd(d: Date): Date {
+  const m = d.getMonth(), y = d.getFullYear();
+  if (m < 3)  return new Date(y, 2,  31, 23, 59, 59);
+  if (m < 6)  return new Date(y, 5,  30, 23, 59, 59);
+  if (m < 9)  return new Date(y, 8,  30, 23, 59, 59);
+  return new Date(y, 11, 31, 23, 59, 59);
+}
+
+function computeAiringStatus(anime: TMDbTVDetail): { label: string; color: string } {
+  if (anime.status === "Canceled") return { label: "打ち切り", color: "text-red-400 border-red-700" };
+
+  const now         = new Date();
+  const seasonStart = getSeasonStart(now);
+  const seasonEnd   = getSeasonEnd(now);
+
+  const firstAir = anime.first_air_date ? new Date(anime.first_air_date) : null;
+  const lastAir  = anime.last_air_date  ? new Date(anime.last_air_date)  : null;
+
+  // 初回放送が現在シーズン終了より未来 → 放送予定
+  if (firstAir && firstAir > seasonEnd) {
+    return { label: "放送予定", color: "text-blue-400 border-blue-600" };
+  }
+
+  // TMDb の次エピソード情報がある → 確実に放送中
+  if (anime.next_episode_to_air) {
+    return { label: "放送中", color: "text-green-400 border-green-600" };
+  }
+
+  // 制作フラグがある → 放送中（続編製作中含む）
+  if (anime.in_production) {
+    return { label: "放送中", color: "text-green-400 border-green-600" };
+  }
+
+  // 最終放送日が現在シーズン内 → 放送中
+  if (lastAir && lastAir >= seasonStart && lastAir <= seasonEnd) {
+    return { label: "放送中", color: "text-green-400 border-green-600" };
+  }
+
+  // 初回放送が現在シーズン内でまだ終了日不明 → 放送中
+  if (firstAir && firstAir >= seasonStart && firstAir <= seasonEnd && !lastAir) {
+    return { label: "放送中", color: "text-green-400 border-green-600" };
+  }
+
+  // 制作中ステータスのまま放送前 → 制作中
+  if (anime.status === "In Production") {
+    return { label: "制作中", color: "text-yellow-400 border-yellow-600" };
+  }
+
+  return { label: "完結", color: "text-gray-400 border-gray-600" };
+}
+
+function StatusBadge({ anime }: { anime: TMDbTVDetail }) {
+  const s = computeAiringStatus(anime);
   return (
     <span className={`border text-xs px-2 py-0.5 rounded ${s.color}`}>{s.label}</span>
   );
@@ -182,7 +234,7 @@ export default async function AnimeDetailPage({ params }: AnimeDetailPageProps) 
                 </span>
               )}
               {year && <span className="text-gray-400 text-sm">{year}</span>}
-              {anime.status && <StatusBadge status={anime.status} />}
+              {anime.status && <StatusBadge anime={anime} />}
               {anime.number_of_seasons > 0 && (
                 <span className="text-gray-400 text-sm">{anime.number_of_seasons}シーズン</span>
               )}
