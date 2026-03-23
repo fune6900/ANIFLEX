@@ -85,6 +85,8 @@ interface SeasonEpisodesProps {
   seasons: TMDbSeason[];
 }
 
+const PAGE_SIZE = 30;
+
 export default function SeasonEpisodes({ animeId, seasons }: SeasonEpisodesProps) {
   const mainSeasons = seasons.filter((s) => s.season_number > 0);
   const [selectedSeason, setSelectedSeason] = useState<number>(
@@ -93,6 +95,7 @@ export default function SeasonEpisodes({ animeId, seasons }: SeasonEpisodesProps
   const [episodes, setEpisodes] = useState<TMDbEpisode[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+  const [page, setPage] = useState(1);
 
   const fetchEpisodes = useCallback(
     async (seasonNumber: number) => {
@@ -117,9 +120,13 @@ export default function SeasonEpisodes({ animeId, seasons }: SeasonEpisodesProps
 
   useEffect(() => {
     fetchEpisodes(selectedSeason);
+    setPage(1);
   }, [selectedSeason, fetchEpisodes]);
 
   if (mainSeasons.length === 0) return null;
+
+  const totalPages = Math.ceil(episodes.length / PAGE_SIZE);
+  const pagedEpisodes = episodes.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
     <section className="mt-10">
@@ -167,10 +174,61 @@ export default function SeasonEpisodes({ animeId, seasons }: SeasonEpisodesProps
           </div>
         )}
 
-        {!loading && episodes.map((ep) => (
+        {!loading && pagedEpisodes.map((ep) => (
           <EpisodeCard key={ep.id} ep={ep} />
         ))}
       </div>
+
+      {/* ページネーション */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-1 mt-4">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="px-3 py-1.5 rounded bg-gray-800 text-gray-300 text-sm hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            aria-label="前のページ"
+          >
+            ‹
+          </button>
+
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
+            const isEdge = p === 1 || p === totalPages;
+            const isNear = Math.abs(p - page) <= 1;
+            if (!isEdge && !isNear) {
+              if (p === 2 || p === totalPages - 1) {
+                return <span key={p} className="text-gray-600 px-1 text-sm">…</span>;
+              }
+              return null;
+            }
+            return (
+              <button
+                key={p}
+                onClick={() => setPage(p)}
+                className={`min-w-[2rem] px-2 py-1.5 rounded text-sm font-semibold transition-colors ${
+                  p === page
+                    ? "bg-white text-black"
+                    : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                }`}
+              >
+                {p}
+              </button>
+            );
+          })}
+
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+            className="px-3 py-1.5 rounded bg-gray-800 text-gray-300 text-sm hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            aria-label="次のページ"
+          >
+            ›
+          </button>
+
+          <span className="text-gray-600 text-xs ml-2">
+            {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, episodes.length)} / {episodes.length}話
+          </span>
+        </div>
+      )}
     </section>
   );
 }
