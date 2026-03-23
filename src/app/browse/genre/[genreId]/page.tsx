@@ -88,7 +88,7 @@ export default async function GenrePage({ params, searchParams }: GenrePageProps
   return (
     <div className="min-h-screen bg-[#141414]">
       {/* ジャンルヘッダー */}
-      <div className={`relative bg-gradient-to-b ${genre.color} to-[#141414] pt-24 pb-12 px-4 md:px-12`}>
+      <div className={`relative bg-gradient-to-b ${genre.color} to-[#141414] pt-24 pb-12`}>
         <div className="absolute inset-0 opacity-10"
           style={{
             backgroundImage: `radial-gradient(ellipse at 30% 50%, white 0%, transparent 60%)`,
@@ -115,7 +115,8 @@ export default async function GenrePage({ params, searchParams }: GenrePageProps
         </div>
       </div>
 
-      <div className="px-4 md:px-12 pb-20">
+      <div className="px-4 md:px-8 lg:px-12 xl:px-16 2xl:px-20 pb-20">
+        <div className="max-w-[1920px] mx-auto">
         {/* 他ジャンルへのクイックリンク */}
         <div className="flex gap-2 flex-wrap mb-8 -mt-4">
           {ANIME_GENRES.filter((g) => g.id !== genreId).map((g) => (
@@ -149,7 +150,7 @@ export default async function GenrePage({ params, searchParams }: GenrePageProps
 
         {/* グリッド */}
         {results.length > 0 && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 3xl:grid-cols-8 gap-3 md:gap-4 xl:gap-5">
             {results.map((anime) => (
               <AnimeGridCard key={anime.id} anime={anime} />
             ))}
@@ -198,6 +199,7 @@ export default async function GenrePage({ params, searchParams }: GenrePageProps
             )}
           </div>
         )}
+        </div>
       </div>
     </div>
   );

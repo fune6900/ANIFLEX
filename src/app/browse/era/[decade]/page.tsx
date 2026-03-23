@@ -86,7 +86,7 @@ export default async function EraPage({ params, searchParams }: EraPageProps) {
   return (
     <div className="min-h-screen bg-[#141414]">
       {/* ヘッダー */}
-      <div className={`relative bg-gradient-to-b ${era.color} to-[#141414] pt-24 pb-14 px-4 md:px-12 overflow-hidden`}>
+      <div className={`relative bg-gradient-to-b ${era.color} to-[#141414] pt-24 pb-14 overflow-hidden`}>
         {/* 大きな年代テキスト（装飾） */}
         <div className="absolute right-4 md:right-16 top-1/2 -translate-y-1/2 text-white/5 font-black text-[120px] md:text-[180px] leading-none select-none pointer-events-none">
           {era.shortLabel}
@@ -133,7 +133,8 @@ export default async function EraPage({ params, searchParams }: EraPageProps) {
         </div>
       </div>
 
-      <div className="px-4 md:px-12 pb-20">
+      <div className="px-4 md:px-8 lg:px-12 xl:px-16 2xl:px-20 pb-20">
+        <div className="max-w-[1920px] mx-auto">
         {/* ソートボタン */}
         <div className="flex items-center gap-3 mb-6 mt-4">
           <span className="text-gray-500 text-sm">並び替え:</span>
@@ -178,7 +179,7 @@ export default async function EraPage({ params, searchParams }: EraPageProps) {
 
         {/* グリッド */}
         {results.length > 0 && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 3xl:grid-cols-8 gap-3 md:gap-4 xl:gap-5">
             {results.map((anime) => (
               <AnimeGridCard key={anime.id} anime={anime} />
             ))}
@@ -227,6 +228,7 @@ export default async function EraPage({ params, searchParams }: EraPageProps) {
             )}
           </div>
         )}
+        </div>
       </div>
     </div>
   );

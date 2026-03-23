@@ -98,7 +98,7 @@ export default function HeroSection({ items }: HeroSectionProps) {
         {/* コンテンツ（スライドごとに再レンダリングしてアニメーション） */}
         <div
           key={current}
-          className="absolute bottom-[20%] md:bottom-[30%] left-4 md:left-16 max-w-xs sm:max-w-md md:max-w-xl animate-fade-in"
+          className="absolute bottom-[20%] md:bottom-[28%] left-4 md:left-12 lg:left-16 xl:left-20 2xl:left-28 max-w-xs sm:max-w-md md:max-w-xl lg:max-w-2xl xl:max-w-3xl animate-fade-in"
         >
           {/* バッジ */}
           <div className="flex items-center gap-2 mb-3">
@@ -111,7 +111,7 @@ export default function HeroSection({ items }: HeroSectionProps) {
           </div>
 
           {/* タイトル */}
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white leading-tight drop-shadow-xl mb-3">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-black text-white leading-tight drop-shadow-xl mb-3">
             {item.title}
           </h1>
 
@@ -129,7 +129,7 @@ export default function HeroSection({ items }: HeroSectionProps) {
 
           {/* あらすじ */}
           {item.overview && (
-            <p className="hidden sm:block text-gray-200 text-sm md:text-base leading-relaxed line-clamp-3 mb-5 drop-shadow">
+            <p className="hidden sm:block text-gray-200 text-sm md:text-base xl:text-lg 2xl:text-xl leading-relaxed line-clamp-3 mb-5 drop-shadow">
               {item.overview}
             </p>
           )}

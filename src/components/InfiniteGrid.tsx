@@ -104,7 +104,7 @@ export default function InfiniteGrid({
 
   return (
     <div>
-      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3 md:gap-4">
+      <div className="max-w-[1920px] mx-auto grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 3xl:grid-cols-9 gap-3 md:gap-4 xl:gap-5">
         {items.map((item) => (
           <GridCard key={`${item.id}-${item.href}`} item={item} />
         ))}

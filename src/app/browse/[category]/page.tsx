@@ -92,7 +92,8 @@ export default async function BrowsePage({ params, searchParams }: BrowsePagePro
   const nextPage = currentPage < totalPages ? currentPage + 1 : null;
 
   return (
-    <div className="min-h-screen bg-[#141414] pt-24 pb-20 px-4 md:px-12">
+    <div className="min-h-screen bg-[#141414] pt-24 pb-20">
+      <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-12 xl:px-16 2xl:px-20">
       {/* ヘッダー */}
       <div className="mb-8">
         <Link
@@ -119,7 +120,7 @@ export default async function BrowsePage({ params, searchParams }: BrowsePagePro
 
       {/* グリッド */}
       {results.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 3xl:grid-cols-8 gap-3 md:gap-4 xl:gap-5">
           {results.map((anime) => (
             <AnimeGridCard key={anime.id} anime={anime} />
           ))}
@@ -172,6 +173,7 @@ export default async function BrowsePage({ params, searchParams }: BrowsePagePro
           )}
         </div>
       )}
+      </div>
     </div>
   );
 }

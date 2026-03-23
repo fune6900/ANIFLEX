@@ -126,7 +126,7 @@ export default async function StudioPage({ params, searchParams }: StudioPagePro
   return (
     <div className="min-h-screen bg-[#141414] text-white">
       {/* ヘッダー */}
-      <div className="relative bg-gradient-to-b from-gray-900 to-[#141414] pt-28 pb-10 px-4 md:px-12">
+      <div className="relative bg-gradient-to-b from-gray-900 to-[#141414] pt-28 pb-10">
         <div className="flex items-center gap-4 mb-3">
           <span className="text-5xl">{studio.emoji}</span>
           <div>
@@ -143,7 +143,8 @@ export default async function StudioPage({ params, searchParams }: StudioPagePro
         )}
       </div>
 
-      <div className="px-4 md:px-12 pb-24">
+      <div className="px-4 md:px-8 lg:px-12 xl:px-16 2xl:px-20 pb-24">
+        <div className="max-w-[1920px] mx-auto">
         {/* 他スタジオへのクイックリンク */}
         <div className="flex gap-2 overflow-x-auto py-3 mb-6" style={{ scrollbarWidth: "none" }}>
           {ANIME_STUDIOS.filter((s) => s.id !== studioId).map((s) => (
@@ -159,7 +160,7 @@ export default async function StudioPage({ params, searchParams }: StudioPagePro
         </div>
 
         {anime.length > 0 ? (
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3 md:gap-4">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 3xl:grid-cols-9 gap-3 md:gap-4 xl:gap-5">
             {anime.map((a) => (
               <AnimeCard key={a.id} anime={a} />
             ))}
@@ -169,6 +170,7 @@ export default async function StudioPage({ params, searchParams }: StudioPagePro
         )}
 
         <Pagination studioId={studioId} currentPage={currentPage} totalPages={totalPages} />
+        </div>
       </div>
     </div>
   );

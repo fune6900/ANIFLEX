@@ -215,7 +215,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const selectedGenre = FILTER_GENRES.find((g) => g.id === genreId);
 
   return (
-    <div className="min-h-screen bg-[#141414] pt-24 pb-24 px-4 md:px-12">
+    <div className="min-h-screen bg-[#141414] pt-24 pb-24">
+      <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-12 xl:px-16 2xl:px-20">
       <div className="mb-8">
         <h1 className="text-white text-2xl font-bold mb-1">アニメを検索</h1>
         {results.length > 0 && (
@@ -278,7 +279,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         <form method="GET" className="mb-10">
           <input type="hidden" name="mode" value="filter" />
           <div className="bg-[#1a1a1a] border border-gray-700 rounded-lg p-5">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 xl:gap-5">
 
               {/* ジャンル */}
               <div>
@@ -412,7 +413,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
       {/* 結果グリッド */}
       {results.length > 0 && (
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3 md:gap-4">
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 3xl:grid-cols-9 gap-3 md:gap-4 xl:gap-5">
           {results.map((anime) => (
             <AnimeGridCard key={anime.id} anime={anime} />
           ))}
@@ -444,6 +445,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           <p className="text-gray-600 text-sm">ジャンル・年・評価・ステータス・ソート順で検索できます</p>
         </div>
       )}
+      </div>
     </div>
   );
 }

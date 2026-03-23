@@ -21,7 +21,7 @@ export default function Navbar() {
         scrolled ? "bg-[#141414]" : "bg-gradient-to-b from-black/80 to-transparent"
       }`}
     >
-      <div className="flex items-center justify-between px-4 md:px-12 py-4">
+      <div className="max-w-[1920px] mx-auto flex items-center justify-between px-4 md:px-8 lg:px-12 xl:px-16 2xl:px-20 py-4">
         {/* ロゴ */}
         <div className="flex items-center gap-4 md:gap-6">
           <Link href="/">

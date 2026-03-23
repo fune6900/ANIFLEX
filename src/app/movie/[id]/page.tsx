@@ -130,7 +130,8 @@ export default async function MovieDetailPage({ params }: MovieDetailPageProps) 
       </div>
 
       {/* コンテンツ */}
-      <div className="relative -mt-32 md:-mt-48 px-4 md:px-12 pb-24">
+      <div className="relative -mt-32 md:-mt-48 pb-24">
+      <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-12 xl:px-16 2xl:px-20">
         <div className="flex flex-col md:flex-row gap-6 md:gap-10">
           {/* ポスター */}
           <div className="flex-shrink-0 w-36 md:w-48 lg:w-56 mx-auto md:mx-0">
@@ -390,6 +391,7 @@ export default async function MovieDetailPage({ params }: MovieDetailPageProps) 
             映画一覧に戻る
           </Link>
         </div>
+      </div>
       </div>
     </div>
   );

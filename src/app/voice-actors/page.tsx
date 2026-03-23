@@ -216,7 +216,8 @@ export default async function VoiceActorsPage({ searchParams }: VoiceActorsPageP
   const hasFilters = sort !== "popularity" || !!dept;
 
   return (
-    <div className="min-h-screen bg-[#141414] pt-24 pb-24 px-4 md:px-12">
+    <div className="min-h-screen bg-[#141414] pt-24 pb-24">
+      <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-12 xl:px-16 2xl:px-20">
       {/* ヘッダー */}
       <div className="mb-8">
         <h1 className="text-white text-2xl font-bold">声優を検索</h1>
@@ -333,7 +334,7 @@ export default async function VoiceActorsPage({ searchParams }: VoiceActorsPageP
         )
       ) : (
         results.length > 0 && (
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3 md:gap-4">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 3xl:grid-cols-9 gap-3 md:gap-4 xl:gap-5">
             {results.map((person) => (
               <PersonGridCard key={person.id} person={person} />
             ))}
@@ -345,6 +346,7 @@ export default async function VoiceActorsPage({ searchParams }: VoiceActorsPageP
       {query && totalPages > 1 && (
         <Pagination query={query} sort={sort} dept={dept} currentPage={currentPage} totalPages={totalPages} />
       )}
+      </div>
     </div>
   );
 }

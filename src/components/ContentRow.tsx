@@ -221,7 +221,7 @@ function AnimeCard({ item }: { item: ContentRowItem }) {
   const thumbnail = (
     <div
       ref={cardRef}
-      className={`relative flex-shrink-0 w-[120px] sm:w-[140px] md:w-[160px] lg:w-[180px] cursor-pointer`}
+      className={`relative flex-shrink-0 w-[120px] sm:w-[140px] md:w-[155px] lg:w-[175px] xl:w-[200px] 2xl:w-[225px] 3xl:w-[250px] cursor-pointer`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
@@ -340,8 +340,8 @@ export default function ContentRow({ title, items, allHref }: ContentRowProps) {
   };
 
   return (
-    <div className="relative group/row mb-6 md:mb-8">
-      <h2 className="text-white font-bold text-base md:text-lg mb-2 md:mb-3 px-4 md:px-12 flex items-center gap-2">
+    <div className="relative group/row mb-6 md:mb-8 max-w-[1920px] mx-auto">
+      <h2 className="text-white font-bold text-base md:text-lg xl:text-xl mb-2 md:mb-3 px-4 md:px-8 lg:px-12 xl:px-16 2xl:px-20 flex items-center gap-2">
         {title}
         {allHref && (
           <Link
@@ -371,7 +371,7 @@ export default function ContentRow({ title, items, allHref }: ContentRowProps) {
         <div
           ref={rowRef}
           onScroll={handleScroll}
-          className="flex gap-1 md:gap-2 overflow-x-auto scrollbar-hide px-4 md:px-12 pb-2"
+          className="flex gap-1 md:gap-2 xl:gap-3 overflow-x-auto scrollbar-hide px-4 md:px-8 lg:px-12 xl:px-16 2xl:px-20 pb-2"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {items.map((item) => (

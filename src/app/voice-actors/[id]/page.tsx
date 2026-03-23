@@ -184,7 +184,8 @@ export default async function VoiceActorDetailPage({
       </div>
 
       {/* コンテンツ */}
-      <div className="relative -mt-28 md:-mt-40 px-4 md:px-12 pb-20">
+      <div className="relative -mt-28 md:-mt-40 pb-20">
+      <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-12 xl:px-16 2xl:px-20">
         <div className="flex flex-col md:flex-row gap-6 md:gap-10">
           {/* プロフィール写真 */}
           <div className="flex-shrink-0 w-32 md:w-44 lg:w-52 mx-auto md:mx-0">
@@ -299,6 +300,7 @@ export default async function VoiceActorDetailPage({
             ホームに戻る
           </Link>
         </div>
+      </div>
       </div>
     </div>
   );
