@@ -6,6 +6,7 @@ import { getAnimeByGenre, getAnimeDetail, getAnimeExternalIds, getAnimeVideos, g
 import type { TMDbAnime, TMDbCastMember, TMDbExternalIds, TMDbTVDetail, TMDbVideo } from "@/types/tmdb";
 import ContentRow from "@/components/ContentRow";
 import type { ContentRowItem } from "@/components/ContentRow";
+import SeasonEpisodes from "@/components/SeasonEpisodes";
 
 interface AnimeDetailPageProps {
   params: Promise<{ id: string }>;
@@ -527,41 +528,9 @@ export default async function AnimeDetailPage({ params }: AnimeDetailPageProps) 
           </section>
         )}
 
-        {/* シーズン一覧 */}
+        {/* シーズン・エピソード一覧 */}
         {anime.seasons && anime.seasons.filter((s) => s.season_number > 0).length > 0 && (
-          <section className="mt-10">
-            <h2 className="text-white font-bold text-lg mb-4">シーズン</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-              {anime.seasons
-                .filter((s) => s.season_number > 0)
-                .map((season) => (
-                  <div key={season.id} className="bg-[#1a1a1a] rounded overflow-hidden">
-                    <div className="relative aspect-[2/3] bg-gray-900">
-                      {season.poster_path ? (
-                        <Image
-                          src={getImageUrl(season.poster_path, "w342")}
-                          alt={season.name}
-                          fill
-                          sizes="200px"
-                          className="object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center p-3">
-                          <span className="text-gray-500 text-xs text-center">{season.name}</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-2">
-                      <p className="text-white text-xs font-semibold truncate">{season.name}</p>
-                      <p className="text-gray-500 text-[11px]">
-                        {season.episode_count}話
-                        {season.air_date && ` · ${season.air_date.split("-")[0]}`}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-            </div>
-          </section>
+          <SeasonEpisodes animeId={numId} seasons={anime.seasons} />
         )}
 
         {/* 関連アニメ（同ジャンル） */}
