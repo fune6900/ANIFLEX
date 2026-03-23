@@ -161,4 +161,8 @@ export interface TMDbTVDetail extends TMDbAnime {
   homepage?: string;
   credits?: TMDbCredit;
   seasons?: TMDbSeason[];
+  last_air_date?: string | null;
+  in_production?: boolean;
+  next_episode_to_air?: { air_date: string; season_number: number; episode_number: number } | null;
+  last_episode_to_air?: { air_date: string; season_number: number; episode_number: number } | null;
 }

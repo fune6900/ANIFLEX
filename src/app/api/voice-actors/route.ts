@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { searchPerson } from "@/lib/tmdb";
+import { searchPerson, getJapaneseVoiceActors } from "@/lib/tmdb";
 
 // 入力サニタイズ: HTMLタグ・危険文字除去、長さ制限
 function sanitizeQuery(raw: string): string {
@@ -22,11 +22,15 @@ export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const rawQuery = searchParams.get("q") ?? "";
 
+  // クエリなし → 日本の声優一覧（ページング）
   if (!rawQuery) {
-    return NextResponse.json(
-      { results: [], total_results: 0, page: 1, total_pages: 0 },
-      { headers: securityHeaders }
-    );
+    const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10) || 1);
+    try {
+      const data = await getJapaneseVoiceActors(page);
+      return NextResponse.json(data, { headers: securityHeaders });
+    } catch {
+      return NextResponse.json({ error: "取得に失敗しました" }, { status: 500, headers: securityHeaders });
+    }
   }
 
   const query = sanitizeQuery(rawQuery);
