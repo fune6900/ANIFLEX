@@ -4,8 +4,11 @@ import { notFound } from "next/navigation";
 import { getPersonDetail, getImageUrl } from "@/lib/tmdb";
 import type { TMDbPersonCreditCast } from "@/types/tmdb";
 
+const PER_PAGE = 20;
+
 interface VoiceActorDetailPageProps {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ page?: string }>;
 }
 
 // アニメ出演作カード
@@ -65,11 +68,72 @@ function AnimeWorkCard({ credit }: { credit: TMDbPersonCreditCast }) {
   );
 }
 
+function WorksPagination({
+  personId,
+  currentPage,
+  totalPages,
+}: {
+  personId: number;
+  currentPage: number;
+  totalPages: number;
+}) {
+  if (totalPages <= 1) return null;
+
+  const pageUrl = (p: number) => `/voice-actors/${personId}?page=${p}`;
+
+  const range = 2;
+  const pages: number[] = [];
+  for (
+    let i = Math.max(1, currentPage - range);
+    i <= Math.min(totalPages, currentPage + range);
+    i++
+  ) {
+    pages.push(i);
+  }
+
+  return (
+    <div className="flex items-center justify-center gap-1 mt-8 flex-wrap">
+      {currentPage > 1 && (
+        <Link href={pageUrl(currentPage - 1)} className="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded text-sm transition">← 前へ</Link>
+      )}
+      {pages[0] > 1 && (
+        <>
+          <Link href={pageUrl(1)} className="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded text-sm transition">1</Link>
+          {pages[0] > 2 && <span className="text-gray-500 px-1">…</span>}
+        </>
+      )}
+      {pages.map((p) => (
+        <Link
+          key={p}
+          href={pageUrl(p)}
+          className={`px-3 py-2 rounded text-sm transition ${
+            p === currentPage ? "bg-[#E50914] text-white font-bold" : "bg-gray-800 hover:bg-gray-700 text-white"
+          }`}
+        >
+          {p}
+        </Link>
+      ))}
+      {pages[pages.length - 1] < totalPages && (
+        <>
+          {pages[pages.length - 1] < totalPages - 1 && <span className="text-gray-500 px-1">…</span>}
+          <Link href={pageUrl(totalPages)} className="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded text-sm transition">{totalPages}</Link>
+        </>
+      )}
+      {currentPage < totalPages && (
+        <Link href={pageUrl(currentPage + 1)} className="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded text-sm transition">次へ →</Link>
+      )}
+    </div>
+  );
+}
+
 export default async function VoiceActorDetailPage({
   params,
+  searchParams,
 }: VoiceActorDetailPageProps) {
   const { id } = await params;
+  const { page: pageStr } = await searchParams;
   const numId = parseInt(id, 10);
+  const currentPage = Math.max(1, parseInt(pageStr ?? "1", 10) || 1);
 
   if (isNaN(numId)) notFound();
 
@@ -83,15 +147,12 @@ export default async function VoiceActorDetailPage({
   // アニメ出演作を抽出（ジャンル16 or tv）
   const allCredits = person.combined_credits?.cast ?? [];
   const animeWorks = allCredits
-    .filter(
-      (c) =>
-        c.media_type === "tv" &&
-        (c.genre_ids?.includes(16) ||
-          c.origin_country?.includes("JP") ||
-          true) // 全TV作品を表示（アニメ以外も含む）
-    )
-    .sort((a, b) => b.vote_average - a.vote_average)
-    .slice(0, 20);
+    .filter((c) => c.media_type === "tv")
+    .sort((a, b) => b.vote_average - a.vote_average);
+
+  const totalWorks = animeWorks.length;
+  const totalPages = Math.ceil(totalWorks / PER_PAGE);
+  const pagedWorks = animeWorks.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE);
 
   const age = person.birthday
     ? Math.floor(
@@ -202,14 +263,21 @@ export default async function VoiceActorDetailPage({
         </div>
 
         {/* 出演作品 */}
-        {animeWorks.length > 0 && (
+        {totalWorks > 0 && (
           <section className="mt-10">
-            <h2 className="text-white font-bold text-lg mb-4">出演作品</h2>
+            <div className="flex items-center gap-3 mb-4">
+              <h2 className="text-white font-bold text-lg">出演作品</h2>
+              <span className="text-gray-500 text-sm">{totalWorks}件</span>
+              {totalPages > 1 && (
+                <span className="text-gray-500 text-sm">· {currentPage} / {totalPages} ページ</span>
+              )}
+            </div>
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-2 md:gap-3">
-              {animeWorks.map((credit) => (
+              {pagedWorks.map((credit) => (
                 <AnimeWorkCard key={`${credit.id}-${credit.character}`} credit={credit} />
               ))}
             </div>
+            <WorksPagination personId={numId} currentPage={currentPage} totalPages={totalPages} />
           </section>
         )}
 

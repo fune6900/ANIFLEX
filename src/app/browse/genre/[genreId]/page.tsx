@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getAnimeByGenre, getAnimeByKeyword, resolveKeywordId, getImageUrl } from "@/lib/tmdb";
+import { getAnimeByGenre, getAnimeByKeywords, getImageUrl } from "@/lib/tmdb";
 import { ANIME_GENRES, findGenre } from "@/lib/genres";
 import type { TMDbAnime } from "@/types/tmdb";
 
@@ -68,13 +68,8 @@ export default async function GenrePage({ params, searchParams }: GenrePageProps
   try {
     let data;
     if (genre.filterType === "keyword" && genre.keyword) {
-      // キーワード名 → ID を解決してからフェッチ
-      const keywordId = await resolveKeywordId(genre.keyword);
-      if (keywordId == null) {
-        results = [];
-      } else {
-        data = await getAnimeByKeyword(keywordId, currentPage);
-      }
+      const allKeywords = [genre.keyword, ...(genre.extraKeywords ?? [])];
+      data = await getAnimeByKeywords(allKeywords, currentPage);
     } else {
       data = await getAnimeByGenre(genreId, currentPage);
     }

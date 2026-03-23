@@ -8,6 +8,8 @@ export interface AnimeGenre {
   filterType: "genre" | "keyword";
   /** filterType === "keyword" のときに検索するキーワード文字列 */
   keyword?: string;
+  /** 追加キーワード（OR 検索）*/
+  extraKeywords?: string[];
 }
 
 // ──────────────────────────────────────────────
@@ -45,7 +47,8 @@ const KEYWORD_BASED: AnimeGenre[] = [
     color: "from-pink-950 via-rose-900 to-fuchsia-950",
   },
   {
-    id: 9004, filterType: "keyword", keyword: "sport",
+    id: 9004, filterType: "keyword", keyword: "sports",
+    extraKeywords: ["sport", "baseball", "basketball", "volleyball", "soccer"],
     name: "スポーツ",     emoji: "🏆",
     color: "from-orange-950 via-amber-900 to-yellow-950",
   },

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import { getAiringAnime, getImageUrl } from "@/lib/tmdb";
+import { getAnimeBySeason, getImageUrl } from "@/lib/tmdb";
+import { getRecentSeasons } from "@/lib/seasons";
 import type { TMDbAnime } from "@/types/tmdb";
 
 interface AiringPageProps {
@@ -116,7 +117,10 @@ export default async function AiringPage({ searchParams }: AiringPageProps) {
   const { page: pageStr } = await searchParams;
   const currentPage = Math.max(1, parseInt(pageStr ?? "1", 10) || 1);
 
-  const data = await getAiringAnime(currentPage).catch(() => null);
+  // アクセス日時から現在のシーズンを取得
+  const currentSeason = getRecentSeasons(1)[0];
+
+  const data = await getAnimeBySeason(currentSeason.dateFrom, currentSeason.dateTo, currentPage).catch(() => null);
   const anime: TMDbAnime[] = data?.results ?? [];
   const totalPages = Math.min(data?.total_pages ?? 1, 500);
   const totalResults = data?.total_results ?? 0;
@@ -131,9 +135,9 @@ export default async function AiringPage({ searchParams }: AiringPageProps) {
             <span className="text-red-400 text-sm font-bold tracking-widest">ON AIR</span>
           </div>
         </div>
-        <h1 className="text-4xl md:text-5xl font-black mb-2">放送中アニメ</h1>
+        <h1 className="text-4xl md:text-5xl font-black mb-2">{currentSeason.label}アニメ</h1>
         <p className="text-gray-400 text-sm">
-          現在放送・配信中の日本アニメ
+          {currentSeason.label}（{currentSeason.dateFrom} 〜 {currentSeason.dateTo}）放送・配信の日本アニメ
           {totalResults > 0 && (
             <span className="ml-3">{totalResults.toLocaleString()}件</span>
           )}

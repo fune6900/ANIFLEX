@@ -4,17 +4,17 @@ import type { HeroItem } from "@/components/HeroSection";
 import ContentRow from "@/components/ContentRow";
 import type { ContentRowItem } from "@/components/ContentRow";
 import {
-  getPopularAnime,
   getNewAnime,
   getTrendingAnime,
   getPopularVoiceActors,
   getAnimeByGenre,
-  getAnimeByKeyword,
-  resolveKeywordId,
+  getAnimeByKeywords,
+  getAnimeBySeason,
 } from "@/lib/tmdb";
 import { ANIME_GENRES } from "@/lib/genres";
 import type { AnimeGenre } from "@/lib/genres";
 import { ANIME_ERAS } from "@/lib/eras";
+import { getRecentSeasons } from "@/lib/seasons";
 import type { TMDbAnime, TMDbPerson } from "@/types/tmdb";
 
 // TMDb アニメデータを ContentRowItem に変換
@@ -58,9 +58,8 @@ function toPersonCardItem(person: TMDbPerson): ContentRowItem {
 async function fetchGenreItems(genre: AnimeGenre): Promise<ContentRowItem[]> {
   try {
     if (genre.filterType === "keyword" && genre.keyword) {
-      const keywordId = await resolveKeywordId(genre.keyword);
-      if (!keywordId) return [];
-      const data = await getAnimeByKeyword(keywordId);
+      const allKeywords = [genre.keyword, ...(genre.extraKeywords ?? [])];
+      const data = await getAnimeByKeywords(allKeywords);
       return data.results.slice(0, 10).map(toCardItem);
     } else {
       const data = await getAnimeByGenre(genre.id);
@@ -72,20 +71,23 @@ async function fetchGenreItems(genre: AnimeGenre): Promise<ContentRowItem[]> {
 }
 
 export default async function Home() {
+  // 現在のシーズンを取得
+  const currentSeason = getRecentSeasons(1)[0];
+
   // 既存4列 + 全ジャンル を並列フェッチ
-  const [popularData, newData, trendingData, voiceActorData, ...genreResults] =
+  const [currentSeasonData, newData, trendingData, voiceActorData, ...genreResults] =
     await Promise.allSettled([
-      getPopularAnime(),
+      getAnimeBySeason(currentSeason.dateFrom, currentSeason.dateTo),
       getNewAnime(),
       getTrendingAnime(),
       getPopularVoiceActors(),
       ...ANIME_GENRES.map((g) => fetchGenreItems(g)),
     ]);
 
-  // ヒーロースライダー用: backdrop_path がある人気アニメ6件
+  // ヒーロースライダー用: backdrop_path がある今期アニメ6件
   const heroAnime: HeroItem[] =
-    popularData.status === "fulfilled"
-      ? popularData.value.results
+    currentSeasonData.status === "fulfilled"
+      ? currentSeasonData.value.results
           .filter((a) => a.backdrop_path)
           .slice(0, 6)
           .map((a) => ({
@@ -100,8 +102,8 @@ export default async function Home() {
       : [];
 
   const popularAnime =
-    popularData.status === "fulfilled"
-      ? popularData.value.results.slice(0, 10).map(toCardItem)
+    currentSeasonData.status === "fulfilled"
+      ? currentSeasonData.value.results.slice(0, 10).map(toCardItem)
       : [];
 
   const newAnime =
@@ -120,7 +122,14 @@ export default async function Home() {
   const voiceActors =
     voiceActorData.status === "fulfilled"
       ? voiceActorData.value.results
-          .filter((p) => p.known_for_department === "Acting")
+          .filter((p) =>
+            p.known_for_department === "Acting" &&
+            p.known_for?.some(
+              (k) =>
+                (k.origin_country as string[] | undefined)?.includes("JP") ||
+                (k.genre_ids as number[] | undefined)?.includes(16)
+            )
+          )
           .slice(0, 10)
           .map(toPersonCardItem)
       : [];
@@ -136,7 +145,7 @@ export default async function Home() {
       <div className="relative z-10 -mt-16 md:-mt-24 pb-20">
         {/* 既存ランキング・トレンド列 */}
         {popularAnime.length > 0 && (
-          <ContentRow title="🔥 今期人気アニメ TOP10" items={popularAnime} allHref="/browse/popular" />
+          <ContentRow title={`🔥 ${currentSeason.label}アニメ TOP10`} items={popularAnime} allHref={currentSeason.href} />
         )}
         {trendingAnime.length > 0 && (
           <ContentRow title="📈 今週のトレンド" items={trendingAnime} allHref="/browse/trending" />

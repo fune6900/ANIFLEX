@@ -20,7 +20,6 @@ interface HeroSectionProps {
 
 export default function HeroSection({ items }: HeroSectionProps) {
   const [current, setCurrent] = useState(0);
-  const [muted, setMuted] = useState(true);
 
   const next = useCallback(() => {
     setCurrent((c) => (c + 1) % items.length);
@@ -157,48 +156,6 @@ export default function HeroSection({ items }: HeroSectionProps) {
           </Link>
         </div>
       </div>
-
-      {/* ミュートボタン */}
-      <button
-        onClick={() => setMuted(!muted)}
-        className="absolute bottom-[22%] right-4 md:right-16 w-9 h-9 md:w-10 md:h-10 rounded-full border-2 border-gray-400 text-gray-300 flex items-center justify-center hover:border-white hover:text-white transition"
-      >
-        {muted ? (
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
-            />
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"
-            />
-          </svg>
-        ) : (
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15.536 8.464a5 5 0 010 7.072M12 6v12m0-12L8 9H5a1 1 0 00-1 1v4a1 1 0 001 1h3l4 3"
-            />
-          </svg>
-        )}
-      </button>
 
       {/* スライドドット */}
       {items.length > 1 && (

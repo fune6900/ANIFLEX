@@ -3,19 +3,16 @@ import {
   getAnimeMovies,
   getAnimeBySeason,
   getAnimeByGenre,
-  getAnimeByKeyword,
-  getAiringAnime,
-  getAnimeByStudio,
-  resolveKeywordId,
+  getAnimeByKeywords,
 } from "@/lib/tmdb";
-import { isValidSeason, getSeasonDateRange, type SeasonSlug } from "@/lib/seasons";
+import { isValidSeason, getSeasonDateRange, getRecentSeasons, type SeasonSlug } from "@/lib/seasons";
 import { findGenre } from "@/lib/genres";
 import type { TMDbAnime, TMDbMovie } from "@/types/tmdb";
 
 const SECURITY_HEADERS = {
   "X-Content-Type-Options": "nosniff",
   "X-Frame-Options": "DENY",
-  "Cache-Control": "public, s-maxage=300",
+  "Cache-Control": "no-store",
 };
 
 export interface NormalizedGridItem {
@@ -90,8 +87,8 @@ export async function GET(req: NextRequest) {
       const genre = findGenre(genreId);
       let data;
       if (genre?.filterType === "keyword" && genre.keyword) {
-        const kwId = await resolveKeywordId(genre.keyword);
-        if (kwId) data = await getAnimeByKeyword(kwId, page);
+        const allKeywords = [genre.keyword, ...(genre.extraKeywords ?? [])];
+        data = await getAnimeByKeywords(allKeywords, page);
       } else {
         data = await getAnimeByGenre(genreId, page);
       }
@@ -101,16 +98,8 @@ export async function GET(req: NextRequest) {
         totalResults = data.total_results;
       }
     } else if (type === "airing") {
-      const data = await getAiringAnime(page);
-      items = data.results.map(normalizeAnime);
-      totalPages = data.total_pages;
-      totalResults = data.total_results;
-    } else if (type === "studio") {
-      const studioId = parseInt(searchParams.get("id") ?? "", 10);
-      if (isNaN(studioId)) {
-        return NextResponse.json({ error: "Invalid studio id" }, { status: 400 });
-      }
-      const data = await getAnimeByStudio(studioId, page);
+      const currentSeason = getRecentSeasons(1)[0];
+      const data = await getAnimeBySeason(currentSeason.dateFrom, currentSeason.dateTo, page);
       items = data.results.map(normalizeAnime);
       totalPages = data.total_pages;
       totalResults = data.total_results;

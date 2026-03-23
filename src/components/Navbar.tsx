@@ -3,20 +3,12 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import SearchDropdown from "@/components/SearchDropdown";
-import { ANIME_GENRES } from "@/lib/genres";
 import { ANIME_ERAS } from "@/lib/eras";
-import { ANIME_STUDIOS } from "@/lib/studios";
-import { getRecentSeasons } from "@/lib/seasons";
-
-const RECENT_SEASONS = getRecentSeasons(8);
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [genreMenuOpen, setGenreMenuOpen] = useState(false);
   const [eraMenuOpen, setEraMenuOpen] = useState(false);
-  const [seasonMenuOpen, setSeasonMenuOpen] = useState(false);
-  const [studioMenuOpen, setStudioMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
   useEffect(() => {
@@ -57,45 +49,15 @@ export default function Navbar() {
               放送中
             </Link>
 
-            {/* シーズンドロップダウン */}
-            <div className="relative group">
-              <button className="flex items-center gap-1 hover:text-white transition py-1">
-                シーズン
-                <svg className="w-3.5 h-3.5 transition-transform group-hover:rotate-180" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
-              </button>
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 w-48 bg-[#141414] border border-gray-700 shadow-2xl rounded-sm py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
-                <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-[#141414] border-l border-t border-gray-700 rotate-45" />
-                {RECENT_SEASONS.map((s) => (
-                  <Link key={s.href} href={s.href} className="flex items-center gap-2 px-4 py-2 text-gray-300 hover:text-white hover:bg-white/10 transition text-xs">
-                    <span>{s.emoji}</span>
-                    <span>{s.label}</span>
-                  </Link>
-                ))}
-              </div>
-            </div>
+            {/* シーズン → 専用ページへ */}
+            <Link href="/browse/seasons" className="hover:text-white transition">
+              シーズン
+            </Link>
 
-            {/* ジャンルドロップダウン */}
-            <div className="relative group">
-              <button className="flex items-center gap-1 hover:text-white transition py-1">
-                ジャンル
-                <svg className="w-3.5 h-3.5 transition-transform group-hover:rotate-180" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
-              </button>
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 w-64 bg-[#141414] border border-gray-700 shadow-2xl rounded-sm py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
-                <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-[#141414] border-l border-t border-gray-700 rotate-45" />
-                <div className="grid grid-cols-2 gap-0.5 px-2">
-                  {ANIME_GENRES.map((genre) => (
-                    <Link key={genre.id} href={`/browse/genre/${genre.id}`} className="flex items-center gap-2 px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded transition text-xs">
-                      <span className="text-base leading-none">{genre.emoji}</span>
-                      <span className="truncate">{genre.name}</span>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            </div>
+            {/* ジャンル → 専用ページへ */}
+            <Link href="/browse/genres" className="hover:text-white transition">
+              ジャンル
+            </Link>
 
             {/* 年代ドロップダウン */}
             <div className="relative group">
@@ -113,28 +75,6 @@ export default function Navbar() {
                     <div>
                       <p className="font-semibold">{era.label}</p>
                       <p className="text-gray-500 text-[10px] truncate">{era.description}</p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            {/* スタジオドロップダウン */}
-            <div className="relative group">
-              <button className="flex items-center gap-1 hover:text-white transition py-1">
-                スタジオ
-                <svg className="w-3.5 h-3.5 transition-transform group-hover:rotate-180" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
-              </button>
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 w-60 bg-[#141414] border border-gray-700 shadow-2xl rounded-sm py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
-                <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-[#141414] border-l border-t border-gray-700 rotate-45" />
-                {ANIME_STUDIOS.map((studio) => (
-                  <Link key={studio.id} href={`/browse/studio/${studio.id}`} className="flex items-center gap-3 px-4 py-2 text-gray-300 hover:text-white hover:bg-white/10 transition text-xs">
-                    <span className="text-base leading-none">{studio.emoji}</span>
-                    <div>
-                      <p className="font-semibold">{studio.name}</p>
-                      <p className="text-gray-500 text-[10px] truncate">{studio.description}</p>
                     </div>
                   </Link>
                 ))}
@@ -165,40 +105,8 @@ export default function Navbar() {
                   <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
                   放送中
                 </Link>
-
-                {/* シーズン */}
-                <button className="w-full flex items-center justify-between px-5 py-2 text-sm text-gray-200 hover:text-white" onClick={() => setSeasonMenuOpen(!seasonMenuOpen)}>
-                  シーズン
-                  <svg className={`w-3.5 h-3.5 transition-transform ${seasonMenuOpen ? "rotate-180" : ""}`} fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                </button>
-                {seasonMenuOpen && (
-                  <div className="border-t border-gray-700 pt-1 pb-1">
-                    {RECENT_SEASONS.map((s) => (
-                      <Link key={s.href} href={s.href} className="flex items-center gap-2 px-7 py-1.5 text-xs text-gray-400 hover:text-white hover:underline" onClick={() => setMenuOpen(false)}>
-                        <span>{s.emoji}</span>{s.label}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-
-                {/* ジャンル */}
-                <button className="w-full flex items-center justify-between px-5 py-2 text-sm text-gray-200 hover:text-white" onClick={() => setGenreMenuOpen(!genreMenuOpen)}>
-                  ジャンル
-                  <svg className={`w-3.5 h-3.5 transition-transform ${genreMenuOpen ? "rotate-180" : ""}`} fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                </button>
-                {genreMenuOpen && (
-                  <div className="border-t border-gray-700 pt-1 pb-1">
-                    {ANIME_GENRES.map((genre) => (
-                      <Link key={genre.id} href={`/browse/genre/${genre.id}`} className="flex items-center gap-2 px-7 py-1.5 text-xs text-gray-400 hover:text-white hover:underline" onClick={() => setMenuOpen(false)}>
-                        <span>{genre.emoji}</span>{genre.name}
-                      </Link>
-                    ))}
-                  </div>
-                )}
+                <Link href="/browse/seasons" className="block px-5 py-2 text-sm text-gray-200 hover:text-white hover:underline" onClick={() => setMenuOpen(false)}>シーズン</Link>
+                <Link href="/browse/genres" className="block px-5 py-2 text-sm text-gray-200 hover:text-white hover:underline" onClick={() => setMenuOpen(false)}>ジャンル</Link>
 
                 {/* 年代 */}
                 <button className="w-full flex items-center justify-between px-5 py-2 text-sm text-gray-200 hover:text-white" onClick={() => setEraMenuOpen(!eraMenuOpen)}>
@@ -212,23 +120,6 @@ export default function Navbar() {
                     {ANIME_ERAS.map((era) => (
                       <Link key={era.decade} href={`/browse/era/${era.decade}`} className="flex items-center gap-2 px-7 py-1.5 text-xs text-gray-400 hover:text-white hover:underline" onClick={() => setMenuOpen(false)}>
                         <span>{era.emoji}</span>{era.label}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-
-                {/* スタジオ */}
-                <button className="w-full flex items-center justify-between px-5 py-2 text-sm text-gray-200 hover:text-white" onClick={() => setStudioMenuOpen(!studioMenuOpen)}>
-                  スタジオ
-                  <svg className={`w-3.5 h-3.5 transition-transform ${studioMenuOpen ? "rotate-180" : ""}`} fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                </button>
-                {studioMenuOpen && (
-                  <div className="border-t border-gray-700 pt-1 pb-1">
-                    {ANIME_STUDIOS.map((studio) => (
-                      <Link key={studio.id} href={`/browse/studio/${studio.id}`} className="flex items-center gap-2 px-7 py-1.5 text-xs text-gray-400 hover:text-white hover:underline" onClick={() => setMenuOpen(false)}>
-                        <span>{studio.emoji}</span>{studio.name}
                       </Link>
                     ))}
                   </div>
@@ -258,12 +149,6 @@ export default function Navbar() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
             </svg>
           </button>
-          <div className="flex items-center gap-1 cursor-pointer group">
-            <div className="w-8 h-8 rounded bg-[#E50914] flex items-center justify-center text-white text-xs font-bold">A</div>
-            <svg className="w-4 h-4 text-white transition-transform group-hover:rotate-180" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-            </svg>
-          </div>
         </div>
       </div>
     </header>
