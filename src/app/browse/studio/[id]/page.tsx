@@ -160,7 +160,7 @@ export default async function StudioPage({ params, searchParams }: StudioPagePro
         </div>
 
         {anime.length > 0 ? (
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 3xl:grid-cols-9 gap-3 md:gap-4 xl:gap-5">
+          <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-5 gap-3 md:gap-4 xl:gap-5">
             {anime.map((a) => (
               <AnimeCard key={a.id} anime={a} />
             ))}

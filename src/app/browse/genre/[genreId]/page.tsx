@@ -1,8 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
 import { getAnimeByGenre, getAnimeByKeywords, getImageUrl } from "@/lib/tmdb";
 import { ANIME_GENRES, findGenre } from "@/lib/genres";
+import { detectDevice, itemsPerPage } from "@/lib/device";
 import type { TMDbAnime } from "@/types/tmdb";
 
 interface GenrePageProps {
@@ -60,6 +62,10 @@ export default async function GenrePage({ params, searchParams }: GenrePageProps
 
   const currentPage = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
 
+  const ua = (await headers()).get("user-agent") ?? "";
+  const device = detectDevice(ua);
+  const limit = itemsPerPage(device);
+
   let results: TMDbAnime[] = [];
   let totalPages = 1;
   let totalResults = 0;
@@ -74,7 +80,7 @@ export default async function GenrePage({ params, searchParams }: GenrePageProps
       data = await getAnimeByGenre(genreId, currentPage);
     }
     if (data) {
-      results = data.results;
+      results = data.results.slice(0, limit);
       totalPages = data.total_pages;
       totalResults = data.total_results;
     }
@@ -150,7 +156,7 @@ export default async function GenrePage({ params, searchParams }: GenrePageProps
 
         {/* グリッド */}
         {results.length > 0 && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 3xl:grid-cols-8 gap-3 md:gap-4 xl:gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-5 gap-3 md:gap-4 xl:gap-5">
             {results.map((anime) => (
               <AnimeGridCard key={anime.id} anime={anime} />
             ))}

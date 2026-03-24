@@ -1,7 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
+import { headers } from "next/headers";
 import { getAnimeBySeason, getImageUrl } from "@/lib/tmdb";
 import { getRecentSeasons } from "@/lib/seasons";
+import { detectDevice, itemsPerPage } from "@/lib/device";
 import type { TMDbAnime } from "@/types/tmdb";
 
 interface AiringPageProps {
@@ -120,8 +122,12 @@ export default async function AiringPage({ searchParams }: AiringPageProps) {
   // アクセス日時から現在のシーズンを取得
   const currentSeason = getRecentSeasons(1)[0];
 
+  const ua = (await headers()).get("user-agent") ?? "";
+  const device = detectDevice(ua);
+  const limit = itemsPerPage(device);
+
   const data = await getAnimeBySeason(currentSeason.dateFrom, currentSeason.dateTo, currentPage).catch(() => null);
-  const anime: TMDbAnime[] = data?.results ?? [];
+  const anime: TMDbAnime[] = (data?.results ?? []).slice(0, limit);
   const totalPages = Math.min(data?.total_pages ?? 1, 500);
   const totalResults = data?.total_results ?? 0;
 
@@ -150,7 +156,7 @@ export default async function AiringPage({ searchParams }: AiringPageProps) {
       <div className="px-4 md:px-8 lg:px-12 xl:px-16 2xl:px-20 pb-24">
         <div className="max-w-[1920px] mx-auto">
         {anime.length > 0 ? (
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 3xl:grid-cols-9 gap-3 md:gap-4 xl:gap-5">
+          <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-5 gap-3 md:gap-4 xl:gap-5">
             {anime.map((a) => (
               <AnimeCard key={a.id} anime={a} />
             ))}
