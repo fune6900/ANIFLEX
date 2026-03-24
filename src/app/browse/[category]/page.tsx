@@ -1,7 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
 import { getPopularAnime, getNewAnime, getTrendingAnime, getImageUrl } from "@/lib/tmdb";
+import { detectDevice, itemsPerPage } from "@/lib/device";
 import type { TMDbAnime } from "@/types/tmdb";
 
 const CATEGORY_CONFIG = {
@@ -74,6 +76,10 @@ export default async function BrowsePage({ params, searchParams }: BrowsePagePro
   const config = CATEGORY_CONFIG[category as Category];
   const currentPage = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
 
+  const ua = (await headers()).get("user-agent") ?? "";
+  const device = detectDevice(ua);
+  const limit = itemsPerPage(device);
+
   let results: TMDbAnime[] = [];
   let totalPages = 1;
   let totalResults = 0;
@@ -81,7 +87,8 @@ export default async function BrowsePage({ params, searchParams }: BrowsePagePro
 
   try {
     const data = await config.fetcher(currentPage);
-    results = config.filter ? data.results.filter(config.filter) : data.results;
+    const filtered = config.filter ? data.results.filter(config.filter) : data.results;
+    results = filtered.slice(0, limit);
     totalPages = data.total_pages;
     totalResults = data.total_results;
   } catch {
@@ -120,7 +127,7 @@ export default async function BrowsePage({ params, searchParams }: BrowsePagePro
 
       {/* グリッド */}
       {results.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 3xl:grid-cols-8 gap-3 md:gap-4 xl:gap-5">
+        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-5 gap-3 md:gap-4 xl:gap-5">
           {results.map((anime) => (
             <AnimeGridCard key={anime.id} anime={anime} />
           ))}

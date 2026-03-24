@@ -55,16 +55,33 @@ function toPersonCardItem(person: TMDbPerson): ContentRowItem {
   };
 }
 
+// ─── ランダム系ユーティリティ ───────────────────────────────
+/** Fisher-Yates シャッフル（破壊なし） */
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/** 1〜max のランダムページ番号 */
+function randomPage(max = 3): number {
+  return Math.floor(Math.random() * max) + 1;
+}
+
 // ジャンル1件分のアイテムを取得（genre/keyword どちらにも対応）
 async function fetchGenreItems(genre: AnimeGenre): Promise<ContentRowItem[]> {
   try {
+    const page = randomPage(3);
     if (genre.filterType === "keyword" && genre.keyword) {
       const allKeywords = [genre.keyword, ...(genre.extraKeywords ?? [])];
-      const data = await getAnimeByKeywords(allKeywords);
-      return data.results.slice(0, 10).map(toCardItem);
+      const data = await getAnimeByKeywords(allKeywords, page);
+      return shuffle(data.results).slice(0, 20).map(toCardItem);
     } else {
-      const data = await getAnimeByGenre(genre.id);
-      return data.results.slice(0, 10).map(toCardItem);
+      const data = await getAnimeByGenre(genre.id, page);
+      return shuffle(data.results).slice(0, 20).map(toCardItem);
     }
   } catch {
     return [];
@@ -81,11 +98,13 @@ export default async function Home() {
   const currentSeason = getRecentSeasons(1)[0];
 
   // 既存4列 + 全ジャンル を並列フェッチ
-  const [currentSeasonData, newData, trendingData, voiceActorData, ...genreResults] =
+  // トレンドはフィルタ後に20件確保するため2ページ同時取得
+  const [currentSeasonData, newData, trendingData1, trendingData2, voiceActorData, ...genreResults] =
     await Promise.allSettled([
       getAnimeBySeason(currentSeason.dateFrom, currentSeason.dateTo),
-      getNewAnime(),
-      getTrendingAnime(),
+      getNewAnime(randomPage(3)),
+      getTrendingAnime(1),
+      getTrendingAnime(2),
       getPopularVoiceActors(),
       ...ANIME_GENRES.map((g) => fetchGenreItems(g)),
     ]);
@@ -117,21 +136,22 @@ export default async function Home() {
 
   const popularAnime =
     currentSeasonData.status === "fulfilled"
-      ? currentSeasonData.value.results.slice(0, 10).map(toCardItem)
+      ? shuffle(currentSeasonData.value.results).slice(0, 20).map(toCardItem)
       : [];
 
   const newAnime =
     newData.status === "fulfilled"
-      ? newData.value.results.slice(0, 10).map(toCardItem)
+      ? shuffle(newData.value.results).slice(0, 20).map(toCardItem)
       : [];
 
-  const trendingAnime =
-    trendingData.status === "fulfilled"
-      ? trendingData.value.results
-          .filter((a) => a.genre_ids.includes(16) || a.origin_country.includes("JP"))
-          .slice(0, 10)
-          .map(toCardItem)
-      : [];
+  // 2ページ分を合算してフィルタ → シャッフル → 20件
+  const trendingPool = [
+    ...(trendingData1.status === "fulfilled" ? trendingData1.value.results : []),
+    ...(trendingData2.status === "fulfilled" ? trendingData2.value.results : []),
+  ];
+  const trendingAnime = shuffle(
+    trendingPool.filter((a) => a.genre_ids.includes(16) || a.origin_country.includes("JP"))
+  ).slice(0, 20).map(toCardItem);
 
   const voiceActors =
     voiceActorData.status === "fulfilled"
@@ -147,7 +167,7 @@ export default async function Home() {
               )
             )
           )
-          .slice(0, 10)
+          .slice(0, 20)
           .map(toPersonCardItem)
       : [];
 

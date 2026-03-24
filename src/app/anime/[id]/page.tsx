@@ -120,14 +120,19 @@ export default async function AnimeDetailPage({ params }: AnimeDetailPageProps) 
   const score = anime.vote_average?.toFixed(1);
   const cast: TMDbCastMember[] = anime.credits?.cast?.slice(0, 12) ?? [];
 
-  // 同ジャンルのアニメを最大10件取得（自分自身を除く）
+  // 同ジャンルのアニメをランダムページから取得してシャッフル（最大10件、自分自身を除く）
   const firstGenreId = anime.genres?.[0]?.id ?? null;
   let relatedAnime: TMDbAnime[] = [];
   if (firstGenreId) {
-    const related = await getAnimeByGenre(firstGenreId).catch(() => null);
-    relatedAnime = (related?.results ?? [])
-      .filter((a) => a.id !== numId)
-      .slice(0, 10);
+    const rndPage = Math.floor(Math.random() * 4) + 1; // 1〜4ページのランダム
+    const related = await getAnimeByGenre(firstGenreId, rndPage).catch(() => null);
+    const pool = (related?.results ?? []).filter((a) => a.id !== numId);
+    // Fisher-Yates シャッフル
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    relatedAnime = pool.slice(0, 10);
   }
 
   // OP / ED 動画（専用セクションに表示）

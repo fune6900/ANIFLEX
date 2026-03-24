@@ -10,7 +10,7 @@ export default function ErasPage() {
           <p className="text-gray-400 text-sm xl:text-base">放送年代からアニメを探す</p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-4 xl:gap-5">
+        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-5 gap-4 xl:gap-5">
           {ANIME_ERAS.map((era) => (
             <Link
               key={era.decade}
